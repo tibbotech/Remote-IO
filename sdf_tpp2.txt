@@ -1,0 +1,19 @@
+I=$NET;D=Network;T=GROUP
+I=DH[1];D=DHCP;T=INT;C=STATIC;O=Disabled/0/Enabled/1;F=R
+I=IP[1];D=IP-address;T=STRING;C=IPCTRL;S=DH[1]==1?"a":"e";F=R*
+I=GI[1];D=Gateway IP;T=STRING;C=IPCTRL;F=R*
+I=NM[1];D=Subnet mask;T=STRING;C=IPCTRL;F=R*
+I=$WLN;D=Wi-Fi;T=GROUP
+I=WE[1];D=Wi-Fi mode;T=INT;C=STATIC;O=Disabled/0/Enabled/2;F=R
+I=WD[1];D=DHCP;T=INT;C=STATIC;O=Disabled/0/Enabled/1;F=R;S=WE[1]!=0?"e":"i";F=R
+I=WI[1];D=IP-address;T=STRING;C=IPCTRL;S=WD[1]==1?"a":"e";S=WE[1]!=0?"e":"i";F=R*
+I=WG[1];D=Gateway IP;T=STRING;C=IPCTRL;S=WE[1]!=0?"e":"i";F=R*
+I=WN[1];D=Subnet mask;T=STRING;C=IPCTRL;S=WE[1]!=0?"e":"i";F=R*
+I=WA[1];D=Access point (SSID);T=STRING;C=EDIT;MAXLEN=15;S=WE[1]!=0?"e":"i";F=R*
+I=WS[1];D=AP security mode;T=INT;C=STATIC;S=WE[1]!=0?"e":"i";O=Disabled/0/WEP64/1/WEP128/2/WPA-PSK (TKIP)/3/WPA2-PSK (AES)/4;F=R*
+I=WP[1];D=AP password;T=STRING;C=EDIT;MAXLEN=26;F=R*;S=WE[1]!=0?"e":"i";F=R*
+I=$SNMP;D=SNMP;T=GROUP
+I=SN[1];D=SNMP Enable;T=INT;C=STATIC;O=Disabled/0/Enabled/1;F=R
+I=SB[1];D=Community Name;T=STRING;C=EDIT;MAXLEN=20;S=SN[1]!=0?"e":"i";F=R
+I=SC[1];D=Contact;T=STRING;C=EDIT;MAXLEN=20;S=SN[1]!=0?"e":"i";F=R
+I=SL[1];D=Location;T=STRING;C=EDIT;MAXLEN=20;S=SN[1]!=0?"e":"i";F=R

@@ -1,0 +1,35 @@
+//DEFINES-------------------------------------------------------------
+
+//INCLUDES------------------------------------------------------------
+
+//DECLARATIONS--------------------------------------------------------
+
+#includeb "global.tbh"
+
+#if PLATFORM_ID == TPP3WG2
+	#includepp "stg_tpp3.txt"
+	#define STG_FILE_C "stg_tpp3.txt"
+	#define SDF_FILE_C "sdf_tpp3.txt"
+#endif
+
+#if PLATFORM_ID == TPP2WG2
+	#includepp "stg_tpp2.txt"
+	#define STG_FILE_C "stg_tpp2.txt"
+	#define SDF_FILE_C "sdf_tpp2.txt"
+#endif
+
+#includeb "settings\trunk\settings.tbh"
+
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+
+typedef unsigned char byte;
+typedef unsigned short word;
+typedef unsigned long dword;
+
+#define DBG(x) sys.debugprint(x + "\r\n");
+#define ERR(x) sys.debugprint(x + "\r\n");
+

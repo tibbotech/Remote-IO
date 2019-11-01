@@ -1,0 +1,11 @@
+<?
+
+#includeb "global.tbh"
+
+extern void send_sdf();
+extern ok_ng password_verify();
+
+if (password_verify() == OK)
+	send_sdf();
+
+?>

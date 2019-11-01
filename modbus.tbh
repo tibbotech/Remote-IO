@@ -1,0 +1,35 @@
+
+type modbus_socket
+	socket as byte
+end type
+
+' Read Input Registers
+#define MODBUS_ADC_INPUT_REGISTER_HEX 0
+#define MODBUS_ADC_INPUT_REGISTER_FLOAT 100
+#define MODBUS_COUNTER_INPUT_REGISTER 200
+#define MODBUS_BP_LIST_PORT1_INPUT_REGISTER 300
+#define MODBUS_BP_LIST_PORT2_INPUT_REGISTER 450
+#define MODBUS_BP_LIST_PORT3_INPUT_REGISTER 600
+#define MODBUS_BP_LIST_PORT4_INPUT_REGISTER 750
+
+#define MODBUS_DAC_HOLDING_REGISTER 0
+#define MODBUS_PWM_PULSE_HOLDING_REGISTER 100
+#define MODBUS_PWM_PERIOD_HOLDING_REGISTER 200
+
+enum modbusFunc
+	
+	ReadCoilStatus = 1,
+	ReadInputStatus = 2,
+	ReadHoldingRegisters = 3,
+	ReadInputRegisters = 4,
+	ForceSingleCoil = 5,
+	PresetSingleRegister = 6,
+	ForceMultipleCoils = 15,
+	PresetMultipleRegisters = 16
+
+end enum
+
+declare modbus_socks(MODBUS_SOCKS_MAX) as modbus_socket
+
+declare function modbus_initialize() as boolean
+declare sub modbus_tcp_receive(byref data as string, socketTCP as byte)

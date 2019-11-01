@@ -1,0 +1,32 @@
+
+enum pic_prescaler_enum
+	PIC_PRE_64, '500KHz for CPU clock of 32MHz
+	PIC_PRE_16, '2Mhz  for CPU clock of 32MHz
+	PIC_PRE_4,  '8Mhz  for CPU clock of 32MHz
+	PIC_PRE_1	'32Mhz  for CPU clock of 32MHz
+end enum
+
+'====================================================
+'	GLOBAL VALUES
+declare analog_period as byte
+declare analog_period_counter as byte
+
+declare analog_float_values(MAX_ANALOG_LINES) as real
+declare analog_values(MAX_ANALOG_LINES) as word
+declare analog_last_values(MAX_ANALOG_LINES) as word
+
+declare analog_pwm_pulse(MAX_ANALOG_LINES) as word
+declare analog_pwm_period(MAX_ANALOG_LINES) as word
+declare analog_pwm_prescaler(MAX_ANALOG_LINES) as pic_prescaler_enum
+declare analog_pwm_enable(MAX_ANALOG_LINES) as boolean
+declare analog_pwm_change(MAX_ANALOG_LINES) as boolean
+
+'====================================================
+
+declare sub analog_setup()
+declare sub analog_loop()
+declare function analog_set(channel as word, value as word, pwm_select as boolean) as boolean
+declare function analog_pwm_set(channel as byte, pulse as word) as boolean
+declare sub analog_pic_pwm_start(slot as byte, pin as byte)
+declare sub analog_pic_pwm_stop(slot as byte, pin as byte)
+declare function analog_pwm_onoff(channel as byte, en as boolean) as boolean

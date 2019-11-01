@@ -1,0 +1,75 @@
+==info	root	<R=<TPS3 RemoteIO><Default>>
+==variables	root	<R=<date><<<date><D>> <M=1> <X=1>><Date/Time><1><0><^><^><^>>
+~~<R=<version><<<version><S>> <M=1> <X=1>><Version><1><0><^><remote|General><^>>
+~~<R=<datex><<<datex><D>> <M=1> <X=1>><Date/Time><1><0><^><remote|General><^>>
+~~<R=<modtime><<<variable><S>> <<modtime><D><F=N>>><Modification time><1><0><^><^><^>>
+>>DH	S	<R=<DH><<<DH><I><S=<Disable=0><Enable=1>><V=<L=0 1>>><M=1><X=1>><DHCP Enable><1><1><DHCP Enable><remote|Network><^>>
+>>SP	S	<R=<SP><<<0><I><D=Port 1><S=<Disable=0><RS232=1><RS422=2><RS485=3>><V=<L=0 3>>><<1><I><D=Port 2><S=<Disable=0><RS232=1><RS422=2><RS485=3>><V=<L=0 3>>><<2><I><D=Port 3><S=<Disable=0><RS232=1><RS422=2><RS485=3>><V=<L=0 3>>><<3><I><D=Port 4><S=<Disable=0><RS232=1><RS422=2><RS485=3>><V=<L=0 3>>><M=1><X=1>><Serial Protocol><1><1><^><remote|Serial Ports><^>>
+>>FC	S	<R=<FC><<<0><I><D=Port 1><S=<Disabled=0><Enabled=1>><V=<L=0 1>>><<1><I><D=Port 2><S=<Disabled=0><Enabled=1>><V=<L=0 1>>><<2><I><D=Port 3><S=<Disabled=0><Enabled=1>><V=<L=0 1>>><<3><I><D=Port 4><S=<Disabled=0><Enabled=1>><V=<L=0 1>>><M=1><X=1>><Flow Control><1><1><^><remote|Serial Ports><^>>
+>>BR	S	<R=<BR><<<0><I><D=Port 1><S=<1200bps=0><2400bps=1><4800bps=2><9600bps=3><19200bps=4><38400bps=5><57600bps=6><115200bps=7><150bps=8><300bps=9><600bps=10><28800bps=11><230400bps=12><460800bps=13>><V=<L=0 13>>><<1><I><D=Port 3><S=<1200bps=0><2400bps=1><4800bps=2><9600bps=3><19200bps=4><38400bps=5><57600bps=6><115200bps=7><150bps=8><300bps=9><600bps=10><28800bps=11><230400bps=12><460800bps=13>><V=<L=0 13>>><<2><I><D=Port 3><S=<1200bps=0><2400bps=1><4800bps=2><9600bps=3><19200bps=4><38400bps=5><57600bps=6><115200bps=7><150bps=8><300bps=9><600bps=10><28800bps=11><230400bps=12><460800bps=13>><V=<L=0 13>>><<3><I><D=Port 4><S=<1200bps=0><2400bps=1><4800bps=2><9600bps=3><19200bps=4><38400bps=5><57600bps=6><115200bps=7><150bps=8><300bps=9><600bps=10><28800bps=11><230400bps=12><460800bps=13>><V=<L=0 13>>><M=1><X=1>><Baudrate><1><1><^><remote|Serial Ports><^>>
+>>PR	S	<R=<PR><<<0><I><D=Port 1><S=<None=0><Even=1><Odd=2><Mark=3><Space=4>><V=<L=0 4>>><<1><I><D=Port 2><S=<None=0><Even=1><Odd=2><Mark=3><Space=4>><V=<L=0 4>>><<2><I><D=Port 3><S=<None=0><Even=1><Odd=2><Mark=3><Space=4>><V=<L=0 4>>><<3><I><D=Port 4><S=<None=0><Even=1><Odd=2><Mark=3><Space=4>><V=<L=0 4>>><M=1><X=1>><Parity><1><1><^><remote|Serial Ports><^>>
+>>BB	S	<R=<BB><<<0><I><D=Port 1><S=<7 bits=0><8 bits=1>><V=<L=0 1>>><<1><I><D=Port 2><S=<7 bits=0><8 bits=1>><V=<L=0 1>>><<2><I><D=Port 3><S=<7 bits=0><8 bits=1>><V=<L=0 1>>><<3><I><D=Port 4><S=<7 bits=0><8 bits=1>><V=<L=0 1>>><M=1><X=1>><Data Bits><1><1><^><remote|Serial Ports><^>>
+>>IP	S	<R=<IP><<<IP><S>><M=1><X=1>><IP Address><1><1><^><remote|Network><^>>
+>>GI	S	<R=<GI><<<GI><S>><M=1><X=1>><LAN Gateway Address><1><1><^><remote|Network><^>>
+>>NM	S	<R=<NM><<<NM><S>><M=1><X=1>><Network Mask><1><1><^><remote|Network><^>>
+>>WE	S	<R=<WE><<<WE><I><S=<Disable=0><Enable (on demand)=1><Enable (permanently)=2>><V=<L=0 2>>><M=1><X=1>><WiFi Mode><1><1><^><remote|WiFi><^>>
+>>WD	S	<R=<WD><<<WD><I><S=<Disable=0><Enable=1>><V=<L=0 1>>><M=1><X=1>><WiFi DHCP Enable><1><1><^><remote|WiFi><^>>
+>>WI	S	<R=<WI><<<WI><S>><M=1><X=1>><WiFi IP Address><1><1><^><remote|WiFi><^>>
+>>WG	S	<R=<WG><<<WG><S>><M=1><X=1>><WiFi Gateway Address><1><1><^><remote|WiFi><^>>
+>>WN	S	<R=<WN><<<WN><S>><M=1><X=1>><WiFi Network Mask><1><1><^><remote|WiFi><^>>
+>>WA	S	<R=<WA><<<WA><S><V=<L=0 22>>><M=1><X=1>><W-Fi Access Point (AP) Name (SSID)><1><1><^><remote|WiFi><^>>
+>>WS	S	<R=<WS><<<WS><I><S=<Disable=0><WEP64=1><WEP128=2><WPA-PSK (TKIP)=3><WPA2-PSK (AES)=4>><V=<L=0 4>>><M=1><X=1>><AP Security Mode><1><1><^><remote|WiFi><^>>
+>>WP	S	<R=<WP><<<WP><S><V=<L=0 26>>><M=1><X=1>><AP Password><1><1><^><remote|WiFi><^>>
+>>AR	S	<R=<AR><<<AR><I><S=<Disable=0><Enable=1>><V=<L=0 1>>><M=1><X=1>><AggreGate Mode><1><1><^><remote|AggreGate><^>>
+>>ON	S	<R=<ON><<<ON><S><V=<L=0 32>>><M=1><X=1>><AggreGate Owner Name><1><1><^><remote|AggreGate><^>>
+>>DN	S	<R=<DN><<<DN><S><V=<L=0 32>>><M=1><X=1>><AggreGate Device Name><1><1><^><remote|AggreGate><^>>
+>>TI	S	<R=<TI><<<TI><S>><M=1><X=1>><AggreGate Server IP><1><1><^><remote|AggreGate><^>>
+>>TP	S	<R=<TP><<<TP><L><V=<L=0 65535>>><M=1><X=1>><AggreGate Server Port><1><1><^><remote|AggreGate><^>>
+>>CT	S	<R=<CT><<<CT><I><V=<L=0 99>>><M=1><X=1>><AggreGate Connection Timeout (min)><1><1><^><remote|AggreGate><^>>
+>>AA	S	<R=<AA><<<AA><I><S=<Disable=0><Enable=1>><V=<L=0 1>>><M=1><X=1>><Analog Events Enable><1><1><^><remote|AggreGate><^>>
+>>AD	S	<R=<AD><<<AD><I><S=<Disable=0><Enable=1>><V=<L=0 1>>><M=1><X=1>><Digital Events Enable><1><1><^><remote|AggreGate><^>>
+>>AC	S	<R=<AC><<<AC><I><S=<Disable=0><Enable=1>><V=<L=0 1>>><M=1><X=1>><Counter Events Enable><1><1><^><remote|AggreGate><^>>
+>>AB	S	<R=<AB><<<AB><I><S=<Disable=0><Enable=1>><V=<L=0 1>>><M=1><X=1>><BProbes Events Enable><1><1><^><remote|AggreGate><^>>
+==functions	root	<R=<hash><<<context><S>><<variable><S>><M=1><X=1>><<<hash><I>><M=1><X=1>><Table Hash><^><^>>
+~~<R=<finishTable><<<context><S>><<variable><S>><M=1><X=1>><<<hash><I>><M=1><X=1>><Finish Table><^><^>>
+~~<R=<startTable><<<context><S>><<variable><S>><M=1><X=1>><<M=0><X=0>><Start Table><^><^>>
+~~<R=<addRecord><<<context><S>><<variable><S>><<record><S>><M=1><X=1>><<M=0><X=0>><Add Record><^><^>>
+~~<R=<removeRecord><<<context><S>><<variable><S>><<id><S>><M=1><X=1>><<M=0><X=0>><Remove Record><^><^>>
+~~<R=<updateRecord><<<context><S>><<variable><S>><<record><S>><M=1><X=1>><<M=0><X=0>><Update Record><^><^>>
+~~<R=<putRecords><<<record><S>><M=1><X=1>><<M=0><X=0>><Put Record><^><^>>
+~~<R=<login><<<challenge><S>><M=1><X=1>><<<owner><S>><<name><S>><<response><S>><M=1><X=1>><Login><^><^>>
+~~<R=<register><<M=0><X=0>><<<password><S>><M=1><X=1>><Auto Register><^><^>>
+~~<R=<synchronized><<M=0><X=0>><<M=0><X=0>><Synchronized><^><^>>
+>>init	<R=<init><<M=0><X=0>><<M=0><X=0>><Initialize all settings><^><remote>>
+>>reboot	<R=<reboot><<M=0><X=0>><<M=0><X=0>><Reboot device><^><remote>>
+>>si	<R=<si><<<num><I><S=<Port 1=0><Port 2=1><Port 3=2><Port 4=3>>><<data><S>><M=1><X=1>><<M=0><X=0>><Serial Port Output><^><remote|RemoteIO>>
+>>sao	<R=<sao><<<num><I><D=Number Of Analog Channel><V=<L=1 48>>><<value><I><D=Value for Analog channel><V=<L=0 4095>>><M=1><X=1>><<M=0><X=0>><Set Analog Output><^><remote|RemoteIO>>
+>>gai	<R=<gai><<<num><I><D=Number of channel Analog input><V=<L=1 48>>><M=1><X=1>><<<value><F><D=Value of selected Analog input>><M=1><X=1>><Get Analog Input><^><remote|RemoteIO>>
+>>sdo	<R=<sdo><<<num><I><D=Number of Digital output channel><V=<L=1 49>>><<value><B><D=New value for Digital output channel>><M=1><X=1>><<M=0><X=0>><Set Digital Ouput><^><remote|RemoteIO>>
+>>gdi	<R=<gdi><<<num><I><D=Channel of Digital Input><V=<L=1 49>>><M=1><X=1>><<<value><B><D=Value of Digital Input><S=<Low=0><High=1>>><M=1><X=1>><Get Digital Input><^><remote|RemoteIO>>
+>>spwm	<R=<spwm><<<num><I><D=Channel for PWM output><V=<L=1 47>>><<pulse><I><D=New value for PWM pulse><V=<L=1 1024>>><M=1><X=1>><<M=0><X=0>><Set PWM Value><^><remote|RemoteIO>>
+>>spwme	<R=<spwme><<<num><I><D=Channel of PWM><V=<L=1 47>>><<enable><B><S=<Disable=0><Enable=1>>><M=1><X=1>><<M=0><X=0>><Set PWM Mode><^><remote|RemoteIO>>
+>>gpwme	<R=<gpwme><<<num><I><D=Channel of PWM><V=<L=1 47>>><M=1><X=1>><<<enable><B><S=<Disable=0><Enable=1>>><M=1><X=1>><Get PWM Mode><^><remote|RemoteIO>>
+>>gc	<R=<gc><<<num><I><D=Channel Counter><V=<L=1 49>>><M=1><X=1>><<<counter><I>><M=1><X=1>><Get Counter><^><remote|RemoteIO>>
+>>cc	<R=<cc><<<num><I><D=Channel for Clear Counter><V=<L=1 49>>><M=1><X=1>><<M=0><X=0>><Clear Counter><^><remote|RemoteIO>>
+==events	root
+>>io	I2	<R=<io><<<num><I><D=IO channel>><<st><I><D=IO State><S=<Low=0><High=1>>><M=1><X=1>><IO State Changed><^><2><remote>>
+>>ser	I2	<R=<ser><<<num><I><D=Serial port><S=<Port 1=0><Port 2=1><Port 3=2><Port 4=3>>><<data><S><D=Data>><<hex><S><D=Hex>><M=1><X=1>><Serial Data Recieved><^><2><remote>>
+>>ai	I2	<R=<ai><<<ch><I><D=Analog channel>><<value><F><D=Analog value>><M=1><X=1>><Analog values><^><2><remote>>
+>>count	I2	<R=<count><<<num><I>><<value><I>><M=1><X=1>><IO Pin Counter><^><2><remote>>
+>>bp	I2	<R=<bp><<<port><I><D=Serial Port  Number><S=<Port 1=0><Port 2=1><Port 3=2><Port 4=3>>><<userID><I><D=Modbus UserID>><<type><I><S=<Temp=1><TempHum=2><Light=3><3AxisAccel=4>>><<data1><I><D=Data1>><<data2><S><D=Data2>><<data3><S><D=Data3>><M=1><X=1>><BP sensors data event><^><2><remote>>
+#define TBL_TIMESTAMP 1
+#define STG_TIMESTAMP 1
+#define AGG_DESCRIPTOR_FILE "agg_tpp3.txt"
+#define AGG_SETTING_CONTROL 1
+#define AGG_MAX_RECONNECTION_DELAY 15
+#define AGG_DEBUG_PRINT 0
+#define AGG_LOGIN_CONTROL 1
+#define AGG_MAX_NUM_ENTITY_TYPES 4
+#define AGG_MAX_CONTEXT_NAME_LEN 4
+#define AGG_MAX_NUM_SCRIPT_LINES 44
+#define AGG_MAX_SCRIPT_LINE_NAME_LEN 6
+#define AGG_MAX_FUNCTION_NAME_LEN 12
+#define AGG_MAX_NUM_STORED_EVENTS 0
+@@STG_RefPath=stg_tpp3.txt
+@@TBL_RefPath=tbl.txt

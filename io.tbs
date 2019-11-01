@@ -1,0 +1,807 @@
+include "global.tbh"
+
+enum io_direction
+	io_direction_input,
+	io_direction_output,
+	io_direction_both
+end enum
+
+public dim io_cn(NUM_OF_IO) as io_counter
+public dim io_cprobes(NUM_I2C_SLOTS) as io_cprobe
+declare function io_get_num(socket as byte, pin as byte) as byte
+declare function io_get_slot(channel as byte) as byte
+declare sub io_setup(socket as byte, pin as byte, direction as io_direction)
+declare sub io_check(socket as byte, pin as byte, direction as io_direction)
+
+sub setup_io() 
+	
+	dim i, j as byte
+	dim cp as boolean
+	
+	'io controls
+	for i = 0 to NUM_OF_SLOTS - 1
+	
+		for j = 0 to 3
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 or (i = 12 and j = 0) then
+			#endif
+			param_io(i * 4 + j).io_enabled = val(stg_get("IE", i * 4 + j))
+			param_io(i * 4 + j).io_output = NO
+			param_io(i * 4 + j).io_prev_state = LOW
+			param_io(i * 4 + j).io_prev_enabled = NO
+			param_io(i * 4 + j).io_state = LOW
+			
+			io_cn(i * 4 + j).mode = val(stg_get("IC", i * 4 + j))
+			io_cn(i * 4 + j).counter = 0			' Initial COUNTER
+			
+			#if PLATFORM_ID = TPP3WG2
+				end if
+			#endif
+			
+		next j
+
+		' Get CProbes Mode
+		cp = false
+		if i < NUM_I2C_SLOTS then
+			io_cprobes(i) = val(stg_get("CP", i))
+			if io_cprobes(i) <> IO_CPROBE_DISABLE then cp = true
+		end if
+
+		select case param_st(i)
+		case SLOT_IOD_4:
+			io_setup(i, 0, io_direction_both)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_setup(i, 1, io_direction_both)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 11 then 
+			#endif
+			io_setup(i, 2, io_direction_both)
+			io_setup(i, 3, io_direction_both)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+				end if
+			#endif
+			
+		case SLOT_IOD_3:
+			io_setup(i, 0, io_direction_both)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_setup(i, 1, io_direction_both)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 11 then 
+			#endif
+			io_setup(i, 2, io_direction_both)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+				end if
+			#endif
+
+		case SLOT_IOD_2:
+			' Check for CProbe Mode
+			if cp = false then			' Digital mode
+				io_setup(i, 0, io_direction_both)
+				#if PLATFORM_ID = TPP3WG2
+					if i < 12 then 
+				#endif
+				io_setup(i, 1, io_direction_both)
+				#if PLATFORM_ID = TPP3WG2
+					end if
+				#endif
+			end if
+			
+		case SLOT_ID_4:
+			io_setup(i, 0, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_setup(i, 1, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 11 then 
+			#endif
+			io_setup(i, 2, io_direction_input)
+			io_setup(i, 3, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+				end if
+			#endif
+			
+		case SLOT_ID_3:
+			io_setup(i, 0, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_setup(i, 1, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 11 then 
+			#endif
+			io_setup(i, 2, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+				end if
+			#endif
+			
+		case SLOT_ID_2:
+			io_setup(i, 0, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_setup(i, 1, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+			#endif
+			
+		case SLOT_OD_4:
+			io_setup(i, 0, io_direction_output)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_setup(i, 1, io_direction_output)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 11 then 
+			#endif
+			io_setup(i, 2, io_direction_output)
+			io_setup(i, 3, io_direction_output)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+				end if
+			#endif
+			
+		case SLOT_OD_2:
+			io_setup(i, 0, io_direction_output)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_setup(i, 1, io_direction_output)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+			#endif
+			
+		case SLOT_OD_1:
+			io_setup(i, 0, io_direction_output)
+			
+		end select
+
+	next i
+
+end sub
+
+sub io_setup(socket as byte, pin as byte, direction as io_direction)
+
+	dim io_pin as byte
+	
+	io_pin = socket * 4 + pin
+	
+	if param_io(io_pin).io_enabled = YES then
+		
+		select case direction
+		case io_direction_input:
+			param_io(io_pin).io_output = NO
+
+		case io_direction_output:
+			param_io(io_pin).io_output = YES
+		
+		case io_direction_both:
+			if io_cn(io_pin).mode = io_counter_disabled then
+				param_io(io_pin).io_output = val(stg_get("IT", io_pin))
+			else
+				param_io(io_pin).io_output = NO
+			end if
+		
+		end select
+		
+		dim num as byte
+		num = io_get_num(socket, pin)
+		
+		if num <> 255 then
+			io.num = num
+			if param_io(io_pin).io_output = YES then io.state = val(stg_get("II", io_pin))	' Set IO pin initial state
+			io.enabled = param_io(io_pin).io_output
+			param_io(io_pin).io_state = io.state
+			param_io(io_pin).io_prev_state = io.state
+			param_io(io_pin).io_prev_enabled = io.enabled
+		else
+			param_io(io_pin).io_enabled = NO
+		end if
+	
+	end if
+
+end sub
+
+sub digital_loop()
+	
+	dim i, j as byte
+	dim cp as boolean
+
+	'io controls
+	for i = 0 to NUM_OF_SLOTS - 1
+	
+		select case param_st(i)
+		case SLOT_IOD_4:
+			io_check(i, 0, io_direction_both)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_check(i, 1, io_direction_both)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 11 then 
+			#endif
+			io_check(i, 2, io_direction_both)
+			io_check(i, 3, io_direction_both)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+				end if
+			#endif
+			
+		case SLOT_IOD_3:
+			io_check(i, 0, io_direction_both)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_check(i, 1, io_direction_both)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 11 then 
+			#endif
+			io_check(i, 2, io_direction_both)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+				end if
+			#endif
+			
+		case SLOT_IOD_2:
+			cp = false
+			if i < NUM_I2C_SLOTS then
+				if io_cprobes(i) <> IO_CPROBE_DISABLE then cp = true
+			end if
+			if cp = false then
+				io_check(i, 0, io_direction_both)
+				#if PLATFORM_ID = TPP3WG2
+					if i < 12 then 
+				#endif
+				io_check(i, 1, io_direction_both)
+				#if PLATFORM_ID = TPP3WG2
+					end if
+				#endif
+			end if
+			
+		case SLOT_ID_4:
+			io_check(i, 0, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_check(i, 1, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 11 then 
+			#endif
+			io_check(i, 2, io_direction_input)
+			io_check(i, 3, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+				end if
+			#endif
+			
+		case SLOT_ID_3:
+			io_check(i, 0, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_check(i, 1, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 11 then 
+			#endif
+			io_check(i, 2, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+				end if
+			#endif
+			
+		case SLOT_ID_2:
+			io_check(i, 0, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_check(i, 1, io_direction_input)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+			#endif
+			
+		case SLOT_OD_4:
+			io_check(i, 0, io_direction_output)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_check(i, 1, io_direction_output)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 11 then 
+			#endif
+			io_check(i, 2, io_direction_output)
+			io_check(i, 3, io_direction_output)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+				end if
+			#endif
+			
+		case SLOT_OD_2:
+			io_check(i, 0, io_direction_output)
+			#if PLATFORM_ID = TPP3WG2
+				if i < 12 then 
+			#endif
+			io_check(i, 1, io_direction_output)
+			#if PLATFORM_ID = TPP3WG2
+				end if
+			#endif
+			
+		case SLOT_OD_1:
+			io_check(i, 0, io_direction_output)
+			
+		end select
+
+	next i
+
+end sub
+
+sub io_check_counter(io_pin as byte)
+
+	dim counterUp as boolean
+	
+	counterUp = false
+	
+	select case io_cn(io_pin).mode
+	case io_counter_disabled:						' No Counter
+		' Generate event to AGG
+		if login_mode = CMD_MODE_AGGREGATE and param_aggEvents.agg_eventDigital = true then
+			dim sNum, sState as string(3)
+			dim sEvent as string
+			sNum = str(io_pin + 1)
+			sState = str(param_io(io_pin).io_state)
+			sEvent = ""
+			agg_record_encode(sEvent, sNum)
+			agg_record_encode(sEvent, sState)
+			agg_fire_instant_event("", "io", sEvent, 2)
+		end if
+		
+	case io_counter_rise:							' RISE
+		if param_io(io_pin).io_prev_state = LOW and param_io(io_pin).io_state = HIGH then
+			io_cn(io_pin).counter = io_cn(io_pin).counter + 1
+			counterUp = true
+		end if
+		
+	case io_counter_edge:							' EDGE
+		if param_io(io_pin).io_prev_state = HIGH and param_io(io_pin).io_state = LOW then
+			io_cn(io_pin).counter = io_cn(io_pin).counter + 1
+			counterUp = true
+		end if
+		
+	case io_counter_both:							' BOTH
+		if (param_io(io_pin).io_prev_state = LOW and param_io(io_pin).io_state = HIGH) or 
+		   (param_io(io_pin).io_prev_state = HIGH and param_io(io_pin).io_state = LOW) then
+			io_cn(io_pin).counter = io_cn(io_pin).counter + 1
+			counterUp = true
+		end if
+		
+	end select
+
+	if counterUp then
+		if login_mode = CMD_MODE_AGGREGATE and param_aggEvents.agg_eventCounter = true then
+			dim sNum, sState as string(3)
+			dim sEvent as string
+			sNum = str(io_pin + 1)
+			sState = str(io_cn(io_pin).counter)
+			sEvent = ""
+			agg_record_encode(sEvent, sNum)
+			agg_record_encode(sEvent, sState)
+			agg_fire_instant_event("", "count", sEvent, 2)
+		end if
+	end if
+
+end sub
+
+sub io_check(socket as byte, pin as byte, direction as io_direction)
+
+	dim io_pin as byte
+	dim num as byte
+	dim counterUp as boolean
+	
+	io_pin = socket * 4 + pin
+	
+	if param_io(io_pin).io_enabled = YES then
+	
+		select case direction
+		case io_direction_input:
+			if param_io(io_pin).io_enabled = YES then
+				num = io_get_num(socket, pin)
+				
+				if num <> 255 then
+					io.num = num
+					param_io(io_pin).io_state = io.state
+					if param_io(io_pin).io_prev_state <> param_io(io_pin).io_state then
+						' Check COUNTER
+						io_check_counter(io_pin)
+						
+						' Check TRAP
+						snmp_trap_check_digital(io_pin)
+						
+						param_io(io_pin).io_prev_state = param_io(io_pin).io_state
+
+					end if
+				end if
+			end if
+			
+		case io_direction_output:
+			if param_io(io_pin).io_enabled = YES then
+				if param_io(io_pin).io_prev_state <> param_io(io_pin).io_state then
+					num = io_get_num(socket, pin)
+				
+					if num <> 255 then
+						io.num = num
+						if param_io(io_pin).io_output = YES then io.state = param_io(io_pin).io_state
+						param_io(io_pin).io_prev_state = io.state
+					end if
+				end if
+			end if
+			
+		case io_direction_both:
+			if param_io(io_pin).io_enabled = YES then
+				if param_io(io_pin).io_output = YES then	' Output
+					if param_io(io_pin).io_prev_state <> param_io(io_pin).io_state then
+						num = io_get_num(socket, pin)
+						
+						if num <> 255 then
+							io.num = num
+							io.state = param_io(io_pin).io_state
+							param_io(io_pin).io_prev_state = io.state
+						end if
+					end if
+				else									' Input
+					num = io_get_num(socket, pin)
+					
+					if num <> 255 then
+						io.num = num
+						param_io(io_pin).io_state = io.state
+						if param_io(io_pin).io_prev_state <> param_io(io_pin).io_state then
+							' Check COUNTER
+							io_check_counter(io_pin)
+
+							' Check TRAP
+							snmp_trap_check_digital(io_pin)
+
+							param_io(io_pin).io_prev_state = param_io(io_pin).io_state
+
+						end if
+					end if
+				end if
+			end if
+			
+		end select
+		
+	end if
+	
+end sub
+
+function io_set(channel as word, value as low_high) as boolean
+	
+	dim socket as byte
+	dim pin as byte
+	dim cp as boolean
+
+	io_set = true
+
+	socket = io_get_slot(channel)
+	pin = io_get_pin(channel)
+	
+	if socket <> 255 then
+		
+		if param_io(channel).io_enabled = YES then
+			select case param_st(socket)
+			case SLOT_IOD_4:
+				if param_io(channel).io_output = YES then
+					param_io(channel).io_state = value
+					io_check(socket, pin, io_direction_output)
+					io_set = true
+				else
+					io_set = false
+				end if
+
+			case SLOT_IOD_3:
+				if pin < 3 then
+					if param_io(channel).io_output = YES then
+						param_io(channel).io_state = value
+						io_check(socket, pin, io_direction_output)
+						io_set = true
+					else
+						io_set = false
+					end if
+				else
+					io_set = false
+				end if	
+				
+			case SLOT_IOD_2:
+				cp = false
+				if socket < NUM_I2C_SLOTS then
+					if io_cprobes(socket) <> IO_CPROBE_DISABLE then cp = true
+				end if
+				if cp = false then
+					if pin < 2 then
+						if param_io(channel).io_output = YES then
+							param_io(channel).io_state = value
+							io_check(socket, pin, io_direction_output)
+							io_set = true
+						else
+							io_set = false
+						end if
+					else
+						io_set = false
+					end if
+				else
+					io_set = false
+				end if
+				
+			case SLOT_OD_4:
+				if param_io(channel).io_output = YES then
+					param_io(channel).io_state = value
+					io_check(socket, pin, io_direction_output)
+					io_set = true
+				else
+					io_set = false
+				end if
+				
+			case SLOT_OD_2:
+				if pin < 2 then
+					if param_io(channel).io_output = YES then
+						param_io(channel).io_state = value
+						io_check(socket, pin, io_direction_output)
+						io_set = true
+					else
+						io_set = false
+					end if
+				else
+					io_set = false
+				end if
+				
+			case SLOT_OD_1:
+				if pin < 1 then
+					if param_io(channel).io_output = YES then
+						param_io(channel).io_state = value
+						io_check(socket, pin, io_direction_output)
+						io_set = true
+					else
+						io_set = false
+					end if
+				else
+					io_set = false
+				end if
+				
+			case else:
+				io_set = false
+				
+			end select
+		else
+			io_set = false
+		end if
+		
+		
+	else
+		io_set = false
+	end if
+	
+end function
+
+function io_get_pin(channel as byte) as byte
+	
+	#if PLATFORM_ID = TPP3WG2
+		if channel >= 0 and channel <= 48 then
+			io_get_pin = channel mod 4
+		else
+			io_get_pin = 255
+		end if
+	#elif PLATFORM_ID = TPP2WG2
+		if channel >= 0 and channel <= 23 then
+			io_get_pin = channel mod 4
+		else
+			io_get_pin = 255
+		end if
+	#endif
+
+end function
+
+function io_get_slot(channel as byte) as byte
+	
+	#if PLATFORM_ID = TPP3WG2
+		if channel >= 0 and channel <= 48 then
+			io_get_slot = channel / 4
+		else
+			io_get_slot = 255
+		end if
+	#elif PLATFORM_ID = TPP2WG2
+		if channel >= 0 and channel <= 23 then
+			io_get_slot = channel / 4
+		else
+			io_get_slot = 255
+		end if
+	#endif
+
+end function
+
+function io_get_numc(channel as byte) as byte
+
+	#if PLATFORM_ID = TPP2WG2
+	
+		select case channel
+
+		case 0:
+			io_get_numc = 9
+		case 1:
+			io_get_numc = 8
+		case 2:
+			io_get_numc = 0
+		case 3:
+			io_get_numc = 16
+		case 4:
+			io_get_numc = 11
+		case 5:
+			io_get_numc = 10
+		case 6:
+			io_get_numc = 1
+		case 7:
+			io_get_numc = 17
+		case 8:
+			io_get_numc = 13
+		case 9:
+			io_get_numc = 12
+		case 10:
+			io_get_numc = 2
+		case 11:
+			io_get_numc = 18
+		case 12:
+			io_get_numc = 15
+		case 13:
+			io_get_numc = 14
+		case 14:
+			io_get_numc = 3
+		case 15:
+			io_get_numc = 19
+		case 16:
+			io_get_numc = 32
+		case 17:
+			io_get_numc = 33
+		case 18:
+			io_get_numc = 4
+		case 19:
+			io_get_numc = 20
+		case 20:
+			io_get_numc = 34
+		case 21:
+			io_get_numc = 35
+		case 22:
+			io_get_numc = 5
+		case 23:
+			io_get_numc = 21
+
+		case else:
+			io_get_numc = 255
+		
+		end select
+
+	#elif PLATFORM_ID = TPP3WG2
+
+		select case channel
+
+		case 0:
+			io_get_numc = 9
+		case 1:
+			io_get_numc = 8
+		case 2:
+			io_get_numc = 0
+		case 3:
+			io_get_numc = 16
+		case 4:
+			io_get_numc = 32
+		case 5:
+			io_get_numc = 33
+		case 6:
+			io_get_numc = 4
+		case 7:
+			io_get_numc = 20
+		case 8:
+			io_get_numc = 11
+		case 9:
+			io_get_numc = 10
+		case 10:
+			io_get_numc = 1
+		case 11:
+			io_get_numc = 17
+		case 12:
+			io_get_numc = 34
+		case 13:
+			io_get_numc = 35
+		case 14:
+			io_get_numc = 5
+		case 15:
+			io_get_numc = 21
+		case 16:
+			io_get_numc = 13
+		case 17:
+			io_get_numc = 12
+		case 18:
+			io_get_numc = 2
+		case 19:
+			io_get_numc = 18
+		case 20:
+			io_get_numc = 36
+		case 21:
+			io_get_numc = 37
+		case 22:
+			io_get_numc = 6
+		case 23:
+			io_get_numc = 22
+		case 24:
+			io_get_numc = 15
+		case 25:
+			io_get_numc = 14
+		case 26:
+			io_get_numc = 3
+		case 27:
+			io_get_numc = 19
+		case 28:
+			io_get_numc = 38
+		case 29:
+			io_get_numc = 39
+		case 30:
+			io_get_numc = 7
+		case 31:
+			io_get_numc = 23
+		case 32:
+			io_get_numc = 24
+		case 33:
+			io_get_numc = 25
+		case 34:
+			io_get_numc = 26
+		case 35:
+			io_get_numc = 27
+		case 36:
+			io_get_numc = 28
+		case 37:
+			io_get_numc = 29
+		case 38:
+			io_get_numc = 30
+		case 39:
+			io_get_numc = 31
+		case 40:
+			io_get_numc = 40
+		case 41:
+			io_get_numc = 41
+		case 42:
+			io_get_numc = 42
+		case 43:
+			io_get_numc = 43
+		case 44:
+			io_get_numc = 54
+		case 45:
+			io_get_numc = 55
+		case 46:
+			io_get_numc = 255
+		case 47:
+			io_get_numc = 255
+		case 48:
+			io_get_numc = 44
+
+		case else:
+			io_get_numc = 255
+		
+		end select
+
+	#endif
+
+end function
+
+function io_get_num(slot as byte, pin as byte) as byte
+
+	if pin >= 0 and pin < 4 then
+		io_get_num = io_get_numc(slot * 4 + pin)
+	else
+		io_get_num = 255
+	end if
+
+end function

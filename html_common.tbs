@@ -1,0 +1,37 @@
+include "global.tbh"
+
+'------------------------------------------------------------------------------
+public sub sock_setsend(byref s as string)
+'Making sure the tx buffer is free before adding more data to the buffer.
+	
+	while sock.txfree<len(s)
+		if sock.statesimple<>PL_SSTS_EST then 
+			sock.txclear
+			exit sub
+		end if
+	wend
+	sock.setdata(s)
+	sock.send
+end sub
+
+'------------------------------------------------------------------------------
+public function get_http_argument(byref http_req_string as string, byref argument as string) as string
+'Get one specific argument from the http request string.
+'For example If http_req_string = http://index.html&p1=abc&p2=def by calling this function, 
+'get_http_argument(sock.httprqstring,"p1="), the function returns "abc"
+	dim x, y as byte
+	x = instr(1, http_req_string, argument,1)
+	if (x = 0) then
+		get_http_argument = ""
+		exit function
+	end if
+	x = x + len(argument)
+	y = instr(x, http_req_string, "&",1)
+	if (y = 0) then
+		y = instr(x, http_req_string, " ",1)
+		if (y = 0) then
+			y = len(argument)
+		end if
+	end if
+	get_http_argument = mid(http_req_string, x, y - x)
+end function

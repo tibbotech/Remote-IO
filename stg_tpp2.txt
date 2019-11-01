@@ -1,0 +1,81 @@
+>>DH	E	B	1	0	1	I	1	DHCP Enable
+>>IP	E	D	1	4	4	I	192.168.1.40	Ethernet IP
+>>GI	E	D	1	4	4	I	192.168.1.1	Ethernet Gateway IP
+>>NM	E	D	1	4	4	I	255.255.255.0	Ethernet Netmask
+>>WE	E	B	1	0	2	I	0	Wi-Fi mode
+>>WD	E	B	1	0	1	I	0	Wi-Fi DHCP
+>>WI	E	D	1	4	4	I	192.168.1.41	Wi-Fi IP
+>>WG	E	D	1	4	4	I	192.168.1.1	Wi-Fi Gateway IP
+>>WN	E	D	1	4	4	I	255.255.255.0	Wi-Fi Netmask
+>>WA	E	S	1	0	22	I	^	W-Fi Access Point (AP) Name (SSID)
+>>WS	E	B	1	0	4	I	0	AP Security Mode
+>>WP	E	S	1	0	26	I	^	AP Password
+>>WK	E	S	1	0	32	I	^	AP Security Key (internal setting)
+>>wA	E	S	1	0	22	I	^	Previous AP Name (internal setting)
+>>wS	E	B	1	0	4	I	0	Previous AP Security Mode (internal setting)
+>>wP	E	S	1	0	26	I	^	Previous AP password (internal setting)
+>>GE	E	B	1	0	2	A	0	GPRS Mode
+>>GA	E	S	1	0	16	A	*99\x23	GPRS AT Command String
+>>GN	E	S	1	0	31	A	^	GPRS APN
+>>GU	E	S	1	0	16	A	^	GPRS Username
+>>GP	E	S	1	0	16	A	^	GPRS Password
+>>AR	E	B	1	0	1	A	0	AggreGate Mode
+>>ON	E	S	1	0	32	I	^	AggreGate Owner Name
+>>DN	E	S	1	0	32	I	^	AggreGate Device Name
+>>TN	E	S	1	0	32	A	^	AggreGate Server Domain Name
+>>TI	E	D	1	4	4	A	1.0.0.1	AggreGate Server IP
+>>TP	E	W	1	0	65535	A	6480	AggeGate Server Port
+>>CT	E	B	1	0	99	A	5	AggreGate Connection Timeout
+>>PW	E	S	1	0	6	A	^	Password
+>>FC	E	B	4	0	1	A	0	Flow control
+>>BR	E	B	4	0	13	A	5	Serial baudrate
+>>PR	E	B	4	0	4	A	0	Serial parity
+>>BB	E	B	4	0	1	A	1	Serial bits
+>>TE	E	B	1	0	1	A	0	SNTP enbled
+>>TS	E	D	1	4	4	A	220.130.158.71	SNTP server ip
+>>TZ	E	B	1	0	34	A	0	timezone
+>>DS	E	B	1	0	1	A	0	daylight saving
+>>ST	E	S	13	0	4	A	00_0	Socket Type
+>>IE	E	B	24	0	1	A	1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1	IO Pins Enable
+>>IT	E	B	24	0	1	A	1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1	IO Pins Direction
+>>II	E	B	24	0	1	A	0/0/0/0/0/0/0/0/0/0/0/0/0/0/0/0/0/0/0/0/0/0/0/0	IO Pins Initial State
+>>SP	E	B	4	0	3	A	0/0/0/0	Serial Protocol (232,422,485)
+>>AV	E	W	24	0	4095	A	1023	Analog Initial Value
+>>EV	E	W	24	0	1023	A	0	PWM Pulse Values
+>>FV	E	W	24	0	1023	A	0	PWM Period Values
+>>GV	E	B	24	0	3	A	0	PWM Prescaler Values
+>>HV	E	B	24	0	1	A	0	PWM Channel Enable
+>>RT	E	B	6	0	3	A	3/3/3/3/3/3	RTD sensor type
+>>AP	E	B	1	1	255	A	20	Analog channels period in 50ms
+>>RM	E	B	6	0	1	A	0	RTD conversion mode
+>>RS	E	B	6	0	2	A	0	RTD Standart
+>>SN	E	B	1	0	1	A	0	SNMP Enable
+>>SB	E	S	1	0	20	A	public	SNMP Public
+>>SC	E	S	1	0	20	A	Tibbo	SNMP Contact
+>>SL	E	S	1	0	20	A	^	SNMP Location
+>>IC	E	B	24	0	3	A	0	Input Pin Counter Enable & Mode
+>>TT	E	B	4	0	1	A	0	SNMP Trap Enable
+>>TY	E	B	4	0	2	A	0	SNMP Trap Type
+>>TD	E	B	4	0	1	A	0	SNMP Trap Digital Type
+>>TC	E	W	4	1	65535	A	1	SNMP Trap Counter Limit
+>>TV	E	B	4	0	24	A	0/1/2/3	SNMP Trap Pin Number
+>>TR	E	D	1	4	4	A	0.0.0.0	SNMP Trap Receiver IP
+>>TA	E	B	4	0	3	A	0/0/0/0	SNMP Trap Analog Type
+>>TB	E	S	4	1	7	A	0/0/0/0	SNMP Trap Analog Limit 1
+>>TL	E	S	4	1	7	A	0/0/0/0	SNMP Trap Analog Limit 2
+>>TF	E	B	4	0	255	A	0	SNMP Trap Specific Code
+>>BP	E	B	4	0	1	A	0	BP Sensors Available
+>>BS	E	B	64	0	255	A	0	BP Sensors List
+>>CP	E	B	6	0	4	A	0	CProbes List
+>>BO	E	B	1	0	255	A	100	BProbes polling period in 50ms
+>>AA	E	B	1	0	1	A	1	Analog channels will generate event for AGG
+>>AD	E	B	1	0	1	A	1	Digital channels will generate event for AGG
+>>AC	E	B	1	0	1	A	1	Counters will generate event for AGG
+>>AB	E	B	1	0	1	A	1	BProbes will generate event for AGG
+>>WT	E	B	1	0	255	A	0	Installed WiFi Card Type
+#define STG_DESCRIPTOR_FILE "stg_tpp2.txt"
+#define STG_TIMESTAMP 1
+#define STG_MAX_NUM_SETTINGS 75
+#define STG_RAM_ARRAY_SIZE 0
+#define STG_MAX_SETTING_NAME_LEN 2
+#define STG_MAX_SETTING_VALUE_LEN 32

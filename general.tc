@@ -1,0 +1,13 @@
+union Data {
+	float dFloat;
+	unsigned long dLong;
+};
+
+unsigned long FloatToDWord(float fData)
+{
+	Data _converse;
+	
+	_converse.dFloat= fData;
+	
+	return _converse.dLong;
+}

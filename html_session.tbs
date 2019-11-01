@@ -1,0 +1,41 @@
+include "global.tbh"
+
+'==============================================================================
+public function password_verify as ok_ng
+'Check the password.  If the password is correct, proceed to the next page (home.html), otherwise, redirect back to index page
+	
+	dim pw as string(6)
+	dim entered_pw as string(6)
+	dim stg_status as en_stg_status_codes
+	entered_pw = get_http_argument(sock.httprqstring,"pass=") 
+	
+	stg_status = stg_sg("PW",0,pw,EN_STG_GET)
+	
+	if entered_pw = pw then
+		password_verify = OK
+	else
+		'invalid password
+		password_verify=NG
+	end if
+end function
+
+'------------------------------------------------------------------------------
+public function password_verify_post as ok_ng
+'Check the password.  If the password is correct, proceed to the next page (home.html), otherwise, redirect back to index page
+	
+	dim pw as string(6)
+	dim entered_pw as string(6)
+	dim stg_status as en_stg_status_codes
+	entered_pw = get_http_argument(sock.httprqstring,"000_PASSWORD=") 
+	
+	stg_status = stg_sg("PW",0,pw,EN_STG_GET)
+	
+	if entered_pw = pw then
+		password_verify_post = OK
+	else
+		'invalid password
+		password_verify_post=NG
+	end if
+end function
+
+'------------------------------------------------------------------------------

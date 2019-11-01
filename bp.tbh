@@ -1,0 +1,96 @@
+
+#define BP_SENSORS_MAX_ON_PORT 16
+
+#define BP_SENSORS_PORT_INTERCHAR_DELAY 5
+
+#define BP_SENSORS_GET_SENSOR_NOT_FOUND -1
+
+#define BP_SENSORS_TYPE_TEMP 1
+#define BP_SENSORS_TYPE_TEMPHUM 2
+#define BP_SENSORS_TYPE_LIGHT 3
+#define BP_SENSORS_TYPE_ACLRM 4
+
+#define BP_SENSORS_START_TO_FIND_DELAY 10
+#define BP_SENSORS_FIND_REQUEST_TIMEOUT 3
+#define BP_SENSORS_FIND_REQUEST_REGISTER 200
+#define BP_SENSORS_FIND_REQUEST_LENGTH 4
+#define BP_SENSORS_FIND_RESPONCE_LENGTH 13
+#define BP_SENSORS_FIND_RESPONCE_SIGN 10
+#define BP_SENSORS_FIND_RESPONCE_TYPE 6
+#define BP_SENSORS_SIGNATURE &hAA55
+#define BP_SENSORS_MODBUS_EMPTY_ID 0
+#define BP_SENSORS_MODBUS_MIN_ID 1
+#define BP_SENSORS_MODBUS_MAX_ID 247
+#define BP_MODBUS_RESPONCE_SYS_LEN 5
+#define BP_SENSORS_MODBUS_F_READ_HOLDING_REGISTER &H03
+#define BP_SENSORS_MODBUS_F_READ_INPUT_REGISTER &H04
+
+#define BP_SENSORS_POLL_TIME 100
+#define BP_SENSORS_POLL_REQUEST_REGISTER_TEMP 300
+#define BP_SENSORS_POLL_REQUEST_REGISTER_TEMP_LENGTH 2
+#define BP_SENSORS_POLL_REQUEST_REGISTER_TEMPHUM 400
+#define BP_SENSORS_POLL_REQUEST_REGISTER_TEMPHUM_LENGTH 6
+#define BP_SENSORS_POLL_REQUEST_REGISTER_LIGHT 500
+#define BP_SENSORS_POLL_REQUEST_REGISTER_LIGHT_LENGTH 2
+#define BP_SENSORS_POLL_REQUEST_REGISTER_ACLRM 600
+#define BP_SENSORS_POLL_REQUEST_REGISTER_ACLRM_LENGTH 6
+#define BP_SENSORS_POLL_REQUEST_TIMEOUT BP_SENSORS_FIND_REQUEST_TIMEOUT
+#define BP_SENSORS_POLL_MAX_NORESPONCES 10
+
+enum BP_TYPE
+	BP_UNKNOWN,
+	BP_SENSOR_TEMP,
+	BP_SENSOR_TEMPHUM,
+	BP_SENSOR_LIGHT,
+	BP_SENSOR_ACLRT
+end enum
+
+type BP_SENSOR
+	UnitID as byte
+	SensorType as BP_TYPE
+	NoResponceCount as byte
+	Data1 as word
+	Data2 as word
+	Data3 as word
+	Data4 as word
+	Data5 as word
+	Data6 as word
+end type
+
+enum BP_PORT_STATE
+	BP_PORT_STATE_NONE,
+	BP_PORT_STATE_FIND,
+	BP_PORT_STATE_POLL
+end enum
+
+enum BP_PORT_SENSOR_STATE
+	BP_PORT_SENSOR_STATE_NONE,
+	BP_PORT_SENSOR_STATE_GET_FIND,
+	BP_PORT_SENSOR_STATE_GET_REQUEST
+end enum
+
+type BP_PORT_SENSOR
+	state as BP_PORT_SENSOR_STATE
+	typeS as BP_TYPE
+	unitID as byte
+end type
+
+type BP_PORT
+	state as BP_PORT_STATE
+	sensor as BP_PORT_SENSOR
+	unitIDFind as byte
+	enable as boolean
+	time as word
+end type
+
+declare bp_sensors(NUM_SERIAL_PORTS, BP_SENSORS_MAX_ON_PORT) as BP_SENSOR
+declare bp_ports(NUM_SERIAL_PORTS) as BP_PORT
+declare bp_setupPollingTime as byte
+
+declare sub bp_setup()
+declare function bp_init_port(port as byte) as boolean
+declare sub bp_loop()
+declare sub bp_data_arrival(port as byte)
+
+declare function bp_get_type(port as byte, number as byte) as BP_TYPE
+declare function bp_get_id(port as byte, number as byte) as byte

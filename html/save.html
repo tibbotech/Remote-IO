@@ -1,0 +1,57 @@
+<?
+
+#include "utils.th";
+
+extern void setting_update(string name, string value);
+extern ok_ng password_verify_post();
+extern void sock_send(string s);
+
+if (password_verify_post() == OK) {
+	string arg, name, value;
+
+	string s = sock.gethttprqstring(255);
+	
+	unsigned char last, n, e;
+	unsigned char eq, exit;
+
+	n = instr(1, s, " HTTP", 1);
+	if(n != 0)
+		s = left(s, n);
+
+	exit = 0;
+
+	for(;;) {
+		e = instr(1, s, "&", 1);
+		if(0 == e) {
+			if (len(sock.httprqstring) > 0) {
+				if (len(s) == 255) break;
+				s = s + sock.gethttprqstring(255 - len(s));
+				continue;
+			} else {
+				e = len(s)+1;
+				exit = 1;
+			}
+		}
+		
+		arg = mid(s, 1, e-1);
+		s = mid(s, e+1, 255);
+		
+		eq = instr(1, arg, "=", 1);
+		if(eq) {
+			name = left(arg, eq-1);
+			value = mid(arg, eq+1, 255);
+			if (name != "000_PASSWORD")
+				setting_update(name, urldecode(value));
+		}
+		
+		if(exit)
+			break;
+	}
+	sock_send("OK");
+	sock.send();
+} else {
+	sock_send("ERROR");
+	sock.send();
+}
+
+?>

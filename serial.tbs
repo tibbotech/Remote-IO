@@ -1,0 +1,367 @@
+include "global.tbh"
+
+declare function set_ser_channel_01(channel_num as byte) as boolean
+declare function set_ser_channel_02(channel_num as byte) as boolean
+declare function set_ser_channel_05(channel_num as byte) as boolean
+declare function baudrate_set(br_mode as br_modes) as ok_ng
+declare sub serial_set_port_general(channel_num as byte)
+
+sub setup_serial()
+
+	dim f as integer
+	dim result as boolean
+	dim slotType as byte
+
+	'first assume we have no serial ports
+	for f = 0 to NUM_SERIAL_PORTS - 1
+		ser.num = f
+		ser.ctsmap = PL_INT_NULL
+		ser.rtsmap = PL_IO_NULL
+	next f
+
+	'serial port
+	for f = 0 to NUM_SERIAL_PORTS - 1
+		#if PLATFORM_ID = TPP3WG2
+			slotType = param_st(f * 2)
+		#elif PLATFORM_ID = TPP2WG2
+			slotType = param_st(f)
+		#endif
+		if slotType = SLOT_SERIAL_01 or slotType = SLOT_SERIAL_02 or slotType = SLOT_SERIAL_05 then
+			param_sp(f) = val(stg_get("SP", f))
+			param_fc(f) = val(stg_get("FC", f))
+			param_br(f) = val(stg_get("BR", f))
+			param_pr(f) = val(stg_get("PR", f))
+			param_bb(f) = val(stg_get("BB", f))
+			param_bp(f) = val(stg_get("BP", f))
+			
+			select case slotType
+			case SLOT_SERIAL_01:
+				result = set_ser_channel_01(f)
+
+			case SLOT_SERIAL_02:
+				result = set_ser_channel_02(f)
+				
+			case SLOT_SERIAL_05:
+				if param_bp(f) = true then
+					result = bp_init_port(f)
+				else
+					result = set_ser_channel_05(f)
+				end if
+				
+			end select
+
+			if result = true then
+				ser.num = f
+				select case f
+				case 0:
+					ser.ctsmap = SER0_CTS_INT
+					ser.rtsmap = SER0_RTS
+				
+				case 1:
+					ser.ctsmap = SER1_CTS_INT
+					ser.rtsmap = SER1_RTS
+				
+				case 2:
+					ser.ctsmap = SER2_CTS_INT
+					ser.rtsmap = SER2_RTS
+
+				case 3:
+					ser.ctsmap = SER3_CTS_INT
+					ser.rtsmap = SER3_RTS
+					
+				end select
+				
+				if ser.rtsmap <> PL_IO_NULL then
+					io.num = ser.rtsmap
+					io.enabled = YES
+				end if
+
+				ser.enabled = NO
+				ser.rxbuffrq(2)
+				ser.txbuffrq(2)			
+				sys.buffalloc()
+				ser.enabled = YES
+				ser.rxclear()
+				ser.txclear()
+				ser.notifysent(1)
+			else
+				param_sp(f) = 0
+			end if
+			
+		end if
+	next f
+
+end sub
+
+
+'	Set serial mode for tibbit #01
+public function set_ser_channel_01(channel_num as byte) as boolean
+
+	dim x as byte
+
+	ser.num = channel_num
+	ser.enabled = NO
+	
+	select case param_sp(channel_num)
+	case 0:	' NONE
+		set_ser_channel_01 = false
+
+	case 1:	' #01 RS232
+		select case channel_num
+		case 0:
+			ser.interface = PL_SER_SI_FULLDUPLEX
+			set_ser_channel_01 = true
+			
+		case 1:
+			if param_st(channel_num - 1) <> SLOT_SERIAL_02 then	' Channel 1 is active only for tibbit #01 or #05 installed in Channel 0
+				ser.interface = PL_SER_SI_FULLDUPLEX
+				set_ser_channel_01 = true
+			else
+				set_ser_channel_01 = false
+			end if
+			
+		case 2:
+			ser.interface = PL_SER_SI_FULLDUPLEX
+			set_ser_channel_01 = true
+			
+		case 3:
+			if param_st(channel_num - 1) <> SLOT_SERIAL_02 then	' Channel 3 is active only for tibbit #01 or #05 installed in Channel 2
+				ser.interface = PL_SER_SI_FULLDUPLEX
+				set_ser_channel_01 = true
+			else
+				set_ser_channel_01 = false
+			end if
+
+		case else:
+			set_ser_channel_01 = false
+		
+		end select
+
+	case else:
+		set_ser_channel_01 = false
+		
+	end select
+
+
+	if set_ser_channel_01 = true then
+		serial_set_port_general(channel_num)
+	end if
+	
+end function
+
+'	Set serial mode for tibbit #02
+public function set_ser_channel_02(channel_num as byte) as boolean
+
+	dim x as byte
+
+	ser.num = channel_num
+	ser.enabled = NO
+	
+	select case param_sp(channel_num)
+	case 0:	' NONE
+		set_ser_channel_02 = false
+
+	case 1:	' #01 RS232
+		select case channel_num
+		case 0:
+			io.num = SER0_HDFD
+			io.state = HIGH
+			io.enabled = YES
+			io.num = SER0_RSMD
+			io.state = LOW
+			io.enabled = YES
+			io.lineset(SER0_HDFD, HIGH)
+			io.lineset(SER0_RSMD, LOW)
+			set_ser_channel_02 = true
+		
+		case 2:
+			io.num = SER2_HDFD
+			io.state = HIGH
+			io.enabled = YES
+			io.num = SER2_RSMD
+			io.state = LOW
+			io.enabled = YES
+			io.lineset(SER2_HDFD, HIGH)
+			io.lineset(SER2_RSMD, LOW)
+			set_ser_channel_02 = true
+			
+		case else:
+			set_ser_channel_02 = false
+			
+		end select
+
+	case 2: ' #02 RS422
+		select case channel_num
+		case 0:
+			io.num = SER0_HDFD
+			io.state = HIGH
+			io.enabled = YES
+			io.num = SER0_RSMD
+			io.state = LOW
+			io.enabled = YES
+			io.lineset(SER0_HDFD, HIGH)
+			io.lineset(SER0_RSMD, HIGH)
+			set_ser_channel_02 = true
+			
+		case 2:
+			io.num = SER2_HDFD
+			io.state = HIGH
+			io.enabled = YES
+			io.num = SER2_RSMD
+			io.state = LOW
+			io.enabled = YES
+			io.lineset(SER2_HDFD, HIGH)
+			io.lineset(SER2_RSMD, HIGH)
+			set_ser_channel_02 = true
+			
+		case else:
+			set_ser_channel_02 = false
+			
+		end select
+
+	case 3:	' #03 RS485
+		select case channel_num
+		case 0:
+			ser.interface = PL_SER_SI_HALFDUPLEX
+			io.num = SER0_HDFD
+			io.state = HIGH
+			io.enabled = YES
+			io.num = SER0_RSMD
+			io.state = LOW
+			io.enabled = YES
+			io.lineset(SER0_HDFD, LOW)
+			io.lineset(SER0_RSMD, HIGH)
+			set_ser_channel_02 = true
+			
+		case 2:
+			ser.interface = PL_SER_SI_HALFDUPLEX
+			io.num = SER2_HDFD
+			io.state = HIGH
+			io.enabled = YES
+			io.num = SER2_RSMD
+			io.state = LOW
+			io.enabled = YES
+			io.lineset(SER2_HDFD, LOW)
+			io.lineset(SER2_RSMD, HIGH)
+			set_ser_channel_02 = true
+			
+		case else:
+			set_ser_channel_02 = false
+			
+		end select
+
+	case else:
+		set_ser_channel_02 = false
+		
+	end select
+
+
+	if set_ser_channel_02 = true then
+		serial_set_port_general(channel_num)
+	end if
+	
+end function
+
+'	Set serial mode for tibbit #05
+public function set_ser_channel_05(channel_num as byte) as boolean
+
+	dim x as byte
+
+	ser.num = channel_num
+	ser.enabled = NO
+	
+	select case param_sp(channel_num)
+	case 3:	' #05 RS485
+		select case channel_num
+		case 0:
+			ser.interface = PL_SER_SI_HALFDUPLEX
+			set_ser_channel_05 = true
+			
+		case 1:
+			if param_st(channel_num - 1) <> SLOT_SERIAL_02 then	' Channel 1 is active only for tibbit #01 or #05 installed in Channel 0
+				ser.interface = PL_SER_SI_HALFDUPLEX
+				set_ser_channel_05 = true
+			else
+				set_ser_channel_05 = false
+			end if
+			
+		case 2:
+			ser.interface = PL_SER_SI_HALFDUPLEX
+			set_ser_channel_05 = true
+			
+		case 3:
+			if param_st(channel_num - 1) <> SLOT_SERIAL_02 then	' Channel 3 is active only for tibbit #01 or #05 installed in Channel 2
+				ser.interface = PL_SER_SI_HALFDUPLEX
+				set_ser_channel_05 = true
+			else
+				set_ser_channel_05 = false
+			end if
+
+		case else:
+			set_ser_channel_05 = false
+			
+		end select
+	
+	case else:
+		set_ser_channel_05 = false
+		
+	end select
+
+
+	if set_ser_channel_05 = true then
+		serial_set_port_general(channel_num)
+	end if
+	
+end function
+
+sub serial_set_port_general(channel_num as byte)
+	
+	ser.mode = PL_SER_MODE_UART
+	ser.flowcontrol = param_fc(channel_num)
+	baudrate_set(param_br(channel_num))
+	ser.parity = param_pr(channel_num)
+	ser.bits = param_bb(channel_num)
+	'ser.interchardelay = val(stg_get("MD", channel_num))
+	ser.esctype = PL_SER_ET_DISABLED
+
+end sub
+
+function baudrate_set(br_mode as br_modes) as ok_ng
+'Set the UART according to the supplied baudrate "number"
+
+select case br_mode
+	case BR_1200:
+		ser.baudrate = ser.div9600*8
+	case BR_2400:
+		ser.baudrate = ser.div9600*4
+	case BR_4800:
+		ser.baudrate = ser.div9600*2
+	case BR_9600:
+		ser.baudrate = ser.div9600
+	case BR_19200:
+		ser.baudrate = ser.div9600/2
+	case BR_38400:
+		ser.baudrate = ser.div9600/4
+	case BR_57600:
+		ser.baudrate = ser.div9600/6
+	case BR_115200:
+		ser.baudrate = ser.div9600/12
+	case BR_150:
+		ser.baudrate = ser.div9600*64
+	case BR_300:
+		ser.baudrate = ser.div9600*32
+	case BR_600:
+		ser.baudrate = ser.div9600*16
+	case BR_28800:
+		ser.baudrate = ser.div9600/3
+	case BR_230400:
+		ser.baudrate = ser.div9600/24
+	case BR_460800:
+		ser.baudrate = ser.div9600/48
+	case else
+		baudrate_set = NG
+		exit function
+	end select
+
+	baudrate_set=OK
+end function

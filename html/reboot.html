@@ -1,0 +1,17 @@
+<?
+
+#include "utils.th";
+#includeb "device.tbh";
+
+extern ok_ng password_verify();
+
+if (password_verify() == OK) {
+	sock_send("OK");
+	sock.send();
+	reboot_timer = 6;
+} else {
+	sock_send("ERROR");
+	sock.send();
+}
+
+?>

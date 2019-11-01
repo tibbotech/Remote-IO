@@ -1,0 +1,3033 @@
+include "global.tbh"
+
+#define SCL_PIN 0
+#define SDA_PIN 1
+#define LOAD_PIN 2
+#define BUSY_PIN 3
+#define RST_PIN 2
+#define MCLR_PIN 2
+#define INT_PIN 3
+
+'====================================================
+'	#13
+const ADC_CODE_W = &h10
+const ADC_CODE_R = &h11
+
+const ADC_CH0 = &h88
+const ADC_CH2 = &h98
+const ADC_CH4 = &hA8
+const ADC_CH6 = &hB8
+
+#define SSI_NUM_13 0
+#define SSI_BAUDRATE_13 3
+
+'====================================================
+'	#14
+const DAC_CODE_W = &hC0
+
+#define SSI_NUM_14 0
+#define SSI_BAUDRATE_14 1
+
+'====================================================
+'	#17
+const PIC_CHIP_ADDR_R = &h07
+const PIC_CHIP_ADDR_W = &h06
+
+const PIC_CMD_R       = &h01
+const PIC_CMD_W       = &h02
+
+const PIC_PORTA	      = &h000C
+const PIC_PORTC	      = &h000E
+const PIC_PIE1	      = &h0091
+const PIC_OSCCON      = &h0099
+
+const PIC_APFCON0     = &h011D
+const PIC_APFCON1     = &h011E
+const PIC_ANSELA      = &h018C
+const PIC_ANSELC      = &h018E
+const PIC_TRISA       = &h008C
+const PIC_TRISC       = &h008E
+const PIC_LATA	      = &h010C
+const PIC_LATC	      = &h010E
+const PIC_ADCON0      = &h009D
+const PIC_ADCON1      = &h009E
+const PIC_ADRESH      = &h009C
+const PIC_ADRESL      = &h009B
+const PIC_FVRCON      = &h0117
+const PIC_CCP1CON     = &h0293
+const PIC_CCP2CON     = &h029A
+const PIC_CCP3CON     = &h0313
+const PIC_CCPR1L      = &h0291
+const PIC_CCPR2L      = &h0298
+const PIC_CCPR3L      = &h0311
+const PIC_CCPTMRS0    = &h029E
+const PIC_PR2	      = &h001B
+const PIC_PR4	      = &h0416
+const PIC_PR6	      = &h041D
+const PIC_T2CON	      = &h001C
+const PIC_T4CON	      = &h0417
+const PIC_T6CON	      = &h041E
+
+const PIC_TXREG	      = &h019A
+const PIC_SPBRGL      = &h019B
+const PIC_SPBRGH      = &h019C
+const PIC_RCSTA	      = &h019D
+const PIC_TXSTA	      = &h019E
+const PIC_BAUDCON     = &h019F
+
+#define INTERNAL_OSCILLATOR_FREQ_1MHZ_HF	10
+#define INTERNAL_OSCILLATOR_FREQ_2MHZ_HF	11
+#define INTERNAL_OSCILLATOR_FREQ_4MHZ_HF	12
+#define INTERNAL_OSCILLATOR_FREQ_8MHZ_HF	13
+#define INTERNAL_OSCILLATOR_FREQ_16MHZ_HF	14
+#define INTERNAL_OSCILLATOR_FREQ_32MHZ_HF	15
+
+#ifndef TBT_CLK_SOURCE
+	#define TBT_CLK_SOURCE INTERNAL_OSCILLATOR_FREQ_1MHZ_HF
+#endif
+
+enum pic_pwm_enum
+	PIC_PWM0,
+	PIC_PWM1,
+	PIC_PWM2
+end enum
+
+const TBT16_FW ="GRA V00"
+
+#define SSI_NUM_17 2
+#define SSI_BAUDRATE_17 105
+
+'====================================================
+'	#52
+
+const TBT52_FW = "V1.31 2016/12/15"
+
+dim analog_52_bit_error_compensation(2, 4) as real
+
+#define SSI_NUM_52 3
+#define SSI_BAUDRATE_52 150
+
+'====================================================
+'	#22
+
+'TBT_RTD Co-processor Address
+const TBT22_RTD_CODE_W = &h1A
+const TBT22_RTD_CODE_R = &h1B
+
+'TBT22 Co-processor Command
+const TBT22_RTD_CMD_READ = &h1
+const TBT22_RTD_CMD_WRITE = &h2
+const TBT22_RTD_CMD_FW_VER = &h3
+
+' RTD data, RTD current, and measurement reference voltage. 
+' RTD coefficient C is required only for temperatures below 0 deg. C.
+' The ITS-90 standard is used; other RTDs may have 
+' coefficients defined by the DIN 43760 or the U.S. Industrial (American) standard. 
+#define RTD_A_ITS90         3.9080e-3
+#define RTD_A_USINDUSTRIAL  3.9692e-3
+#define RTD_A_DIN43760      3.9848e-3
+#define RTD_B_ITS90         -5.870e-7
+#define RTD_B_USINDUSTRIAL  -5.8495e-7
+#define RTD_B_DIN43760      -5.8019e-7
+
+enum rtd_standart
+	ITS90 = 0,
+	USINDUSTRIAL,
+	DIN43760
+end enum
+
+'TBT22 RTD register address
+enum tbt22_rtd_reg_write_addr
+	W_REG_ADDR_CONFIGURATION = &h80,
+	W_REG_ADDR_HIGH_FAULT_THRESHOLD_MSB = &h83,
+	W_REG_ADDR_HIGH_FAULT_THRESHOLD_LSB = &h84,
+	W_REG_ADDR_LOW_FAULT_THRESHOLD_MSB = &h85,
+	W_REG_ADDR_LOW_FAULT_THRESHOLD_LSB = &h86
+end enum
+
+' The Fault Status register latches any detected fault bits.
+#define	RTD_FAULT_HIGH_THRESHOLD	&h80	'RTD High Threshold
+#define	RTD_FAULT_LOW_THRESHOLD		&h40	'RTD Low Threshold
+#define	RTD_FAULT_REFIN				&h20	'REFIN- > 0.85*Vbias
+#define	RTD_FAULT_REFIN_FORCE		&h10	'REFIN- < 0.85*Vbias
+#define	RTD_FAULT_RTDIN_FORCE		&h08	'RTDIN- < 0.85*Vbias
+#define	RTD_FAULT_VOLTAGE			&h04	'Over/Undervoltage
+#define RTD_CONFIG_CHECK			&h01
+
+enum rtd_conv_mode
+	tbt22_conversion_with_50_hz_mode = 0,
+	tbt22_conversion_with_60_hz_mode
+end enum
+
+enum rtd_sensor_type
+	PT100 = 0,
+	PT200,
+	PT500,
+	PT1000
+end enum
+
+dim analog_22_normal_0_resistance(NUM_OF_SLOTS) as real
+dim analog_22_rtd_sensor_type(NUM_OF_SLOTS) as rtd_sensor_type
+dim analog_22_conv_mode(NUM_OF_SLOTS) as rtd_conv_mode
+dim analog_22_standart(NUM_OF_SLOTS) as rtd_standart
+
+const TBT22_FW = "V1.02 2017/07/10"
+
+#define SSI_NUM_22 3
+#define SSI_BAUDRATE_22 150
+
+'====================================================
+'	#40x
+const TBT40_INIT_SIGNATURE = &h1002
+const TBT40_STAMP = "TBT40> "
+const TBT40_CR_LF = chr(13) + chr(10)
+
+const TBT40_WRITE_ADDR = &h5E
+const TBT40_READ_ADDR = &h5F
+
+enum tbt40_regs
+	TBT40_VOLATILE_WIPER_0 = &h0,			'write ,read, increment,decrement 
+	TBT40_NON_VOLATILE_WIPER_0 = &h20,	'write ,read, increment,decrement 
+	TBT40_VOLATILE_TCON = &h40,
+	TBT40_STATUS = &h50
+end enum
+
+#define SSI_NUM_40 1
+#define SSI_BAUDRATE_40 1
+
+'====================================================
+'	#53
+
+const TBT53_WRITE_ADDR = &h90
+const TBT53_READ_ADDR = &h91
+
+#define SSI_NUM_53 3
+#define SSI_BAUDRATE_53 20
+
+'=================================================================
+'		CProbes
+'=================================================================
+'		CP#01 #29	Temp
+#define SSI_NUM_29 1
+#define SSI_BAUDRATE_29 28
+
+const TBT29_MFG_ID	= &h54
+const TBT29_DEVID		= &h400
+
+enum tbt29_resolution
+	'TBT29_RESOLUSION_MODE_0 = &h00 '0.5C (tCONV = 30 ms typical)
+	TBT29_RESOLUSION_MODE_1 = &h01  '0.25C (tCONV = 65 ms typical)
+	'TBT29_RESOLUSION_MODE_2 = &h02 '0.125C (tCONV = 130 ms typical)
+	'TBT29_RESOLUSION_MODE_3 = &h03 '0.0625C (power-up default, tCONV = 250 ms typical)
+end enum
+
+const TBT29_WRITE_ADDR = &h30
+const TBT29_READ_ADDR = &h31
+
+enum tbt29_regs
+'	TBT29_REG_CONF = &h01,
+'	TBT29_REG_TUP = &h02,
+'	TBT29_REG_TLO = &h03,
+'	TBT29_REG_TCRIT = &h04,
+	TBT29_REG_TA = &h05,
+	TBT29_REG_MFGID = &h06,
+	TBT29_REG_IDREV = &h07,
+	TBT29_REG_RESOL = &h08
+end enum
+
+'=================================================================
+'	CP#02 #30	Temp&Hum
+#define SSI_NUM_30 1
+#define SSI_BAUDRATE_30 28
+
+const TBT30_WRITE_ADDR = &h4E
+const TBT30_READ_ADDR = &h4F
+
+enum tbt30_status
+	TBT30_STATUS_NORMAL_OPERATION = &h0,
+	TBT30_STAUTS_STALE_DATA = &h1,
+	TBT30_STAUTS_IN_COMMAND_MODE = &h2,
+	TBT30_STAUTS_NOT_USED = &h3
+end enum
+
+'=================================================================
+'	CP#03 #28	Light
+#define SSI_NUM_28 1
+#define SSI_BAUDRATE_28 28
+
+const TBT28_WRITE_ADDR = &h46		' address code for write
+const TBT28_READ_ADDR = &h47		' address code for read
+
+const TBT28_CMD_POWER_DOWN		= &h00
+const TBT28_CMD_POWER_ON		= &h01
+const TBT28_CMD_AUTO_RESOL_0	= &h10
+const TBT28_CMD_HRESOL_0		= &h12
+const TBT28_CMD_LRESOL_0		= &h13
+
+'=================================================================
+'	#35	Pressure
+#define SSI_NUM_35 1
+#define SSI_BAUDRATE_35 28
+
+const TBT35_WRITE_ADDR = &hC0			' Manufacturer address code for write
+const TBT35_READ_ADDR  = &hC1			' Manufacturer address code for read
+
+const TBT35_CMD_READ_PRESSURE		= &h00
+const TBT35_CMD_READ_COEFFICIENT	= &h04
+const TBT35_CMD_START_CONVERSION	= &h12
+
+dim a0, b1, b2, c12 as float=0
+
+'====================================================
+'	GLOBAL VALUES
+dim analog_period as byte
+dim analog_period_counter as byte
+
+dim analog_ssi_last_use_slot(4) as byte
+
+dim analog_float_values(MAX_ANALOG_LINES) as real
+dim analog_values(MAX_ANALOG_LINES) as word
+dim analog_last_values(MAX_ANALOG_LINES) as word
+
+dim analog_pwm_pulse(MAX_ANALOG_LINES) as word
+dim analog_pwm_period(MAX_ANALOG_LINES) as word
+dim analog_pwm_prescaler(MAX_ANALOG_LINES) as pic_prescaler_enum
+dim analog_pwm_enable(MAX_ANALOG_LINES) as boolean
+dim analog_pic_ccp_rec(MAX_ANALOG_LINES) as byte
+dim analog_pwm_change(MAX_ANALOG_LINES) as boolean
+
+declare sub analog_ssi_init()
+declare function analog_13_read_channel(slot as byte, channel as byte) as integer
+declare sub analog_14_set_channel(slot as byte, channel as byte, value as integer)
+declare sub analog_i2c_init(slot as byte)
+declare sub analog_i2c_get(slot as byte, ssi_num as byte, ssi_baudrate as byte)
+declare sub analog_i2c_start(slot as byte)
+declare sub analog_i2c_stop(slot as byte)
+declare sub analog_i2c_write(data as byte)
+declare function analog_i2c_read(acknak_request as boolean) as byte
+declare sub analog_delay_msecond(value as word)
+declare sub analog_52_init(slot as byte)
+declare sub analog_52_param_read(slot as byte)
+declare function analog_52_read_channel(slot as byte, channel as byte, byref int_data as integer) as real
+declare sub analog_22_init(slot as byte)
+declare function analog_22_read(slot as byte, byref data as real, byref int_data as integer, byref fault_detect as byte, byref fault_status as byte) as ok_ng
+declare sub analog_22_rtd_read_all(slot as byte, byref config as byte, byref rtd as word, byref hi_fault as word, byref lo_fault as word, byref fault as byte)
+declare function analog_22_rtd_config(slot as byte, mode as rtd_conv_mode, byref status as byte, sensor as rtd_sensor_type) as ok_ng
+declare sub analog_22_rtd_reg_write(slot as byte, addr as tbt22_rtd_reg_write_addr, data as byte)
+declare sub analog_40_reg_write(slot as byte, addr as tbt40_regs, data as word)
+declare function analog_40_reg_read(slot as byte, addr as tbt40_regs)as word
+declare sub analog_40_init(slot as byte)
+declare sub analog_40_set(slot as byte, value as real)
+declare function analog_pic_init(slot as byte) as boolean
+declare sub analog_17_set_channel(slot as byte, channel as byte)
+declare sub analog_pic_config(slot as byte)
+declare sub analog_pic_pwm_config(slot as byte, channel as byte, pulse_width as word, period as word, prescaler as pic_prescaler_enum)
+declare sub analog_53_init(slot as byte)
+declare function analog_53_read(slot as byte, byref int_data as integer) as real
+declare sub analog_agg_send(slot as byte, pin as byte)
+declare sub analog_pic_pwm_start(slot as byte, channel as byte)
+declare sub analog_pic_pwm_stop(slot as byte, channel as byte)
+declare sub analog_29_init(slot as byte)
+declare function analog_29_read(slot as byte, byref data as word) as real
+declare sub analog_28_init(slot as byte)
+declare function analog_28_read(slot as byte) as word
+declare sub analog_30_init(slot as byte)
+declare function analog_30_read(slot as byte, byref humword as word, byref humidity as float, byref tempword as word, byref temperature as float) as ok_ng
+declare sub analog_35_init(slot as byte)
+declare function analog_35_read(slot as byte, byref pressureFloat as float)as word
+
+'====================================================
+sub analog_setup()
+
+	dim slot, line as byte
+
+	' Read settings parameters
+	
+	analog_period = val(stg_get("AP", 0))
+	analog_period_counter = 0
+
+	' RTD types
+	for slot = 0 to NUM_STD_SLOTS - 1
+		analog_22_rtd_sensor_type(slot) = val(stg_get("RT", slot))
+		analog_22_conv_mode(slot) = val(stg_get("RM", slot))
+		analog_22_standart(slot) = val(stg_get("RS", slot))
+	next slot
+
+	for line = 0 to MAX_ANALOG_LINES - 1
+		analog_float_values(line) = 0
+		analog_values(line) = 1023
+		analog_last_values(line) = 65535
+		
+		analog_pwm_pulse(line) = 0
+		analog_pwm_period(line) = 0
+		analog_pwm_prescaler(line) = PIC_PRE_64
+		analog_pwm_enable(line) = false
+		analog_pic_ccp_rec(line) = 0
+		analog_pwm_change(line) = false
+	next line
+	
+	for line = 0 to 3
+		analog_ssi_last_use_slot(line) = 255
+	next line
+
+	analog_ssi_init()
+
+	'Analog controls
+	for slot = 0 to NUM_OF_SLOTS - 1
+	
+		select case param_st(slot)
+		case SLOT_IOD_2:		' CProbes maybe
+			if slot < NUM_I2C_SLOTS then
+				if io_cprobes(slot) <> IO_CPROBE_DISABLE then
+					select case io_cprobes(slot)		' CProbe mode
+					case IO_CPROBE_TEMP:
+						analog_i2c_init(slot)
+						analog_29_init(slot)
+						
+					case IO_CPROBE_TEMPHUM:
+						analog_i2c_init(slot)
+						analog_30_init(slot)
+						
+					case IO_CPROBE_LIGHT:
+						analog_i2c_init(slot)
+						analog_28_init(slot)
+						
+					case IO_CPROBE_PRESSURE:
+						analog_i2c_init(slot)
+						analog_35_init(slot)
+
+					end select
+				end if
+			end if
+		
+		case SLOT_IA_4:			' #13
+			analog_i2c_init(slot)
+
+		case SLOT_IA_RTD:			' #22
+			analog_i2c_init(slot)
+			analog_22_init(slot)
+			
+		case SLOT_IA_52:			' #52
+			analog_i2c_init(slot)
+			analog_52_init(slot)
+
+		case SLOT_IA_53:			' #53
+			analog_i2c_init(slot)
+			analog_53_init(slot)
+			
+		case SLOT_OA_4:			' #14
+			analog_i2c_init(slot)
+			'set DAC control pin
+			io.num = io_get_num(slot, LOAD_PIN)
+			io.enabled = YES
+			io.lineset(io_get_num(slot, LOAD_PIN), HIGH)
+			'set RDY-BSY monitor pin
+			io.num = io_get_num(slot, BUSY_PIN)
+			io.enabled = NO
+			
+			for line = 0 to 3
+				if param_io(slot * 4 + line).io_enabled = YES then
+					analog_values(slot * 4 + line) = val(stg_get("AV", slot * 4 + line))	' Set Analog pin initial state
+					analog_14_set_channel(slot, line, analog_values(slot * 4 + line))
+				end if
+			next line
+			
+		case SLOT_OA_3:			' #16, #17
+			analog_i2c_init(slot)
+			if analog_pic_init(slot) = false then
+				param_st(slot) = SLOT_EMPTY 
+			end if
+			
+		case SLOT_DP:				' #40x
+			analog_i2c_init(slot)
+			analog_40_init(slot)
+
+			if param_io(slot * 4).io_enabled = YES then
+				analog_values(slot * 4) = val(stg_get("AV", slot * 4))	' Set Analog pin initial state
+				analog_40_set(slot, analog_values(slot * 4))
+			end if
+
+		end select
+
+	next slot
+
+end sub
+
+sub analog_loop()
+
+	dim slot as byte
+
+	for slot = 0 to NUM_OF_SLOTS - 1
+	
+		select case param_st(slot)
+		case SLOT_IOD_2:		' CProbes maybe
+			if slot < NUM_I2C_SLOTS then
+				if io_cprobes(slot) <> IO_CPROBE_DISABLE then
+					select case io_cprobes(slot)			' CProbe mode
+					case IO_CPROBE_TEMP:
+						analog_float_values(slot * 4 + 0) = analog_29_read(slot, analog_values(slot * 4 + 0))
+						snmp_trap_check_analog(slot * 4 + 1, true)
+						analog_agg_send(slot, 0)
+						#if DEV_DEBUG_PRINT
+							dev_debugprint("#29 slot: " + str(slot) + ", value:" + ftostr(analog_float_values(slot * 4 + 0), FTOSTR_MODE_AUTO, 5))
+						#endif
+
+					case IO_CPROBE_TEMPHUM:
+						analog_30_read(slot, analog_values(slot * 4 + 1), analog_float_values(slot * 4 + 1), analog_values(slot * 4 + 0), analog_float_values(slot * 4 + 0))
+						snmp_trap_check_analog(slot * 4 + 0, true)
+						snmp_trap_check_analog(slot * 4 + 1, true)
+						analog_agg_send(slot, 0)
+						analog_agg_send(slot, 1)
+						#if DEV_DEBUG_PRINT
+							dev_debugprint("#30 slot: " + str(slot) + ", value temp:" + ftostr(analog_float_values(slot * 4 + 0), FTOSTR_MODE_AUTO, 5))
+							dev_debugprint("#30 slot: " + str(slot) + ", value hum:" + ftostr(analog_float_values(slot * 4 + 1), FTOSTR_MODE_AUTO, 5))
+						#endif
+						
+					case IO_CPROBE_LIGHT:
+						analog_values(slot * 4 + 0) = analog_28_read(slot)
+						analog_float_values(slot * 4 + 0) = analog_values(slot * 4 + 0)
+						snmp_trap_check_analog(slot * 4 + 0, false)
+						analog_agg_send(slot, 0)
+						#if DEV_DEBUG_PRINT
+							dev_debugprint("#28 slot: " + str(slot) + ", value:" + ftostr(analog_float_values(slot * 4 + 0), FTOSTR_MODE_AUTO, 5))
+						#endif
+						
+					case IO_CPROBE_PRESSURE:
+						analog_values(slot * 4 + 0) = analog_35_read(slot, analog_float_values(slot * 4 + 0))
+						snmp_trap_check_analog(slot * 4 + 0, true)
+						analog_agg_send(slot, 0)
+						#if DEV_DEBUG_PRINT
+							dev_debugprint("#35 slot: " + str(slot) + ", value:" + ftostr(analog_float_values(slot * 4 + 0), FTOSTR_MODE_AUTO, 5))
+						#endif
+						
+					end select
+				end if
+			end if
+
+		case SLOT_IA_4:					' #13
+			if param_io(slot * 4 + 0).io_enabled = YES then
+				analog_values(slot * 4 + 0) = analog_13_read_channel(slot, 0)
+				analog_float_values(slot * 4 + 0) = analog_values(slot * 4 + 0)
+				snmp_trap_check_analog(slot * 4 + 0, false)
+				analog_agg_send(slot, 0)
+
+				#if DEV_DEBUG_PRINT
+					dev_debugprint("#13 slot: " + str(slot) + ", value (ch 1):" + ftostr(analog_float_values(slot * 4 + 0), FTOSTR_MODE_AUTO, 5))
+				#endif
+			end if
+			
+			if param_io(slot * 4 + 1).io_enabled = YES then
+				analog_values(slot * 4 + 1) = analog_13_read_channel(slot, 1)
+				analog_float_values(slot * 4 + 1) = analog_values(slot * 4 + 1)
+				snmp_trap_check_analog(slot * 4 + 1, false)
+				analog_agg_send(slot, 1)
+
+				#if DEV_DEBUG_PRINT
+					dev_debugprint("#13 slot: " + str(slot) + ", value (ch 2):" + ftostr(analog_float_values(slot * 4 + 1), FTOSTR_MODE_AUTO, 5))
+				#endif
+			end if
+			
+			if param_io(slot * 4 + 2).io_enabled = YES then
+				analog_values(slot * 4 + 2) = analog_13_read_channel(slot, 2)
+				analog_float_values(slot * 4 + 2) = analog_values(slot * 4 + 2)
+				snmp_trap_check_analog(slot * 4 + 2, false)
+				analog_agg_send(slot, 2)
+
+				#if DEV_DEBUG_PRINT
+					dev_debugprint("#13 slot: " + str(slot) + ", value (ch 3):" + ftostr(analog_float_values(slot * 4 + 2), FTOSTR_MODE_AUTO, 5))
+				#endif
+			end if
+			
+			if param_io(slot * 4 + 3).io_enabled = YES then
+				analog_values(slot * 4 + 3) = analog_13_read_channel(slot, 3)
+				analog_float_values(slot * 4 + 3) = analog_values(slot * 4 + 3)
+				snmp_trap_check_analog(slot * 4 + 3, false)
+				analog_agg_send(slot, 3)
+
+				#if DEV_DEBUG_PRINT
+					dev_debugprint("#13 slot: " + str(slot) + ", value (ch 4):" + ftostr(analog_float_values(slot * 4 + 3), FTOSTR_MODE_AUTO, 5))
+				#endif
+			end if
+
+		case SLOT_IA_RTD:
+			dim fault_detect, fault_status as byte
+
+			analog_22_read(slot, analog_float_values(slot * 4 + 0), analog_values(slot * 4 + 0), fault_detect, fault_status)
+			snmp_trap_check_analog(slot * 4 + 0, true)
+			analog_agg_send(slot, 0)
+			
+			#if DEV_DEBUG_PRINT
+				dev_debugprint("#22 slot: " + str(slot) + ", Temp value :" + ftostr(analog_float_values(slot * 4 + 0), FTOSTR_MODE_AUTO, 5))
+			#endif
+			
+		case SLOT_IA_52:
+			if param_io(slot * 4 + 0).io_enabled = YES then
+				analog_float_values(slot * 4 + 0) = analog_52_read_channel(slot, 0, analog_values(slot * 4 + 0))
+				snmp_trap_check_analog(slot * 4 + 0, true)
+				analog_agg_send(slot, 0)
+				#if DEV_DEBUG_PRINT
+					dev_debugprint("#52 slot: " + str(slot) + ", value (ch 1):" + ftostr(analog_float_values(slot * 4 + 0), FTOSTR_MODE_AUTO, 5))
+				#endif
+			end if
+
+			if param_io(slot * 4 + 1).io_enabled = YES then
+				analog_float_values(slot * 4 + 1) = analog_52_read_channel(slot, 1, analog_values(slot * 4 + 1))
+				snmp_trap_check_analog(slot * 4 + 1, true)
+				analog_agg_send(slot, 1)
+				#if DEV_DEBUG_PRINT
+					dev_debugprint("#52 slot: " + str(slot) + ", value (ch 2):" + ftostr(analog_float_values(slot * 4 + 1), FTOSTR_MODE_AUTO, 5))
+				#endif
+			end if
+
+			if param_io(slot * 4 + 2).io_enabled = YES then
+				analog_float_values(slot * 4 + 2) = analog_52_read_channel(slot, 2, analog_values(slot * 4 + 2))
+				snmp_trap_check_analog(slot * 4 + 2, true)
+				analog_agg_send(slot, 2)
+				#if DEV_DEBUG_PRINT
+					dev_debugprint("#52 slot: " + str(slot) + ", value (ch 3):" + ftostr(analog_float_values(slot * 4 + 2), FTOSTR_MODE_AUTO, 5))
+				#endif
+			end if
+
+			if param_io(slot * 4 + 3).io_enabled = YES then
+				analog_float_values(slot * 4 + 3) = analog_52_read_channel(slot, 3, analog_values(slot * 4 + 3))
+				snmp_trap_check_analog(slot * 4 + 3, true)
+				analog_agg_send(slot, 3)
+				#if DEV_DEBUG_PRINT
+					dev_debugprint("#52 slot: " + str(slot) + ", value (ch 4):" + ftostr(analog_float_values(slot * 4 + 3), FTOSTR_MODE_AUTO, 5))
+				#endif
+			end if
+
+		case SLOT_IA_53:
+			analog_float_values(slot * 4 + 0) = analog_53_read(slot, analog_values(slot * 4 + 0))
+			snmp_trap_check_analog(slot * 4 + 0, true)
+			analog_agg_send(slot, 0)
+		
+			#if DEV_DEBUG_PRINT
+				dev_debugprint("#53 slot: " + str(slot) + ", value:" + ftostr(analog_float_values(slot * 4 + 0), FTOSTR_MODE_AUTO, 5))
+			#endif
+
+		case SLOT_OA_4:					' #14
+			if param_io(slot * 4 + 0).io_enabled = YES then
+				if analog_values(slot * 4 + 0) <> analog_last_values(slot * 4 + 0) then
+					analog_14_set_channel(slot, 0, analog_values(slot * 4 + 0))
+					analog_last_values(slot * 4 + 0) = analog_values(slot * 4 + 0)
+				end if
+			end if
+
+			if param_io(slot * 4 + 1).io_enabled = YES then
+				if analog_values(slot * 4 + 1) <> analog_last_values(slot * 4 + 1) then
+					analog_14_set_channel(slot, 1, analog_values(slot * 4 + 1))
+					analog_last_values(slot * 4 + 1) = analog_values(slot * 4 + 1)
+				end if
+			end if
+			
+			if param_io(slot * 4 + 2).io_enabled = YES then
+				if analog_values(slot * 4 + 2) <> analog_last_values(slot * 4 + 2) then
+					analog_14_set_channel(slot, 2, analog_values(slot * 4 + 2))
+					analog_last_values(slot * 4 + 2) = analog_values(slot * 4 + 2)
+				end if
+			end if
+			
+			if param_io(slot * 4 + 3).io_enabled = YES then
+				if analog_values(slot * 4 + 3) <> analog_last_values(slot * 4 + 3) then
+					analog_14_set_channel(slot, 3, analog_values(slot * 4 + 3))
+					analog_last_values(slot * 4 + 3) = analog_values(slot * 4 + 3)
+				end if
+			end if
+			
+		case SLOT_OA_3:					' #16, #17
+			if param_io(slot * 4 + 0).io_enabled = YES then
+				if analog_pwm_change(slot * 4 + 0) = true then
+					analog_17_set_channel(slot, 0)
+					analog_pwm_change(slot * 4 + 0) = false
+				end if
+			end if
+
+			if param_io(slot * 4 + 1).io_enabled = YES then
+				if analog_pwm_change(slot * 4 + 1) = true then
+					analog_17_set_channel(slot, 1)
+					analog_pwm_change(slot * 4 + 1) = false
+				end if
+			end if
+			
+			if param_io(slot * 4 + 2).io_enabled = YES then
+				if analog_pwm_change(slot * 4 + 2) = true then
+					analog_17_set_channel(slot, 2)
+					analog_pwm_change(slot * 4 + 2) = false
+				end if
+			end if
+			
+		case SLOT_DP:						' #40x
+			if analog_values(slot * 4 + 0) <> analog_last_values(slot * 4 + 0) then
+				analog_40_set(slot, analog_values(slot * 4 + 0))
+				analog_last_values(slot * 4 + 0) = analog_values(slot * 4 + 0)
+			end if
+
+		end select
+
+	next slot
+	
+end sub
+
+sub analog_agg_send(slot as byte, pin as byte)
+			
+	if login_mode = CMD_MODE_AGGREGATE and param_aggEvents.agg_eventAnalog = true then
+		dim sTemp as string(32)
+		dim sEvent as string
+		
+		sEvent = ""
+		agg_record_encode(sEvent, str(slot * 4 + pin + 1))												' Num channel
+		agg_record_encode(sEvent, ftostr(analog_float_values(slot * 4 + pin), FTOSTR_MODE_AUTO, 5))		' Analog value
+		agg_fire_instant_event("", "ai", sEvent, 2)
+	end if
+
+end sub
+
+function analog_set(channel as word, value as word, pwm_select as boolean) as boolean
+
+	dim slot as byte
+	dim pin as byte
+	dim io_state_new as boolean
+	
+	slot = io_get_slot(channel)
+	
+	analog_set = true
+
+	if slot <> 255 then
+		
+		if param_io(channel).io_enabled = YES then
+			select case param_st(slot)
+			case SLOT_OA_4:					' #14
+				if analog_values(channel) <> value then
+					analog_values(channel) = value
+					analog_14_set_channel(slot, io_get_pin(channel), analog_values(channel))
+					analog_last_values(channel) = analog_values(channel)
+				end if
+
+			case SLOT_OA_3:					' #16, #17
+				if pwm_select = true then		' Set Period PWM
+					if analog_pwm_period(channel) <> value then
+						analog_pwm_period(channel) = value
+						analog_17_set_channel(slot, io_get_pin(channel))
+					end if
+				else							' Set Pulse PWM
+					if analog_pwm_pulse(channel) <> value then
+						analog_pwm_pulse(channel) = value
+						analog_17_set_channel(slot, io_get_pin(channel))
+					end if
+				end if
+				
+			case SLOT_DP:
+				if io_get_pin(channel) = 0 then
+					if analog_values(channel) <> value then
+						analog_values(channel) = value
+						analog_40_set(slot, analog_values(channel))
+						analog_last_values(channel) = analog_values(channel)
+					end if
+				else
+					analog_set = false
+				end if
+
+			case else:
+				analog_set = false
+				
+			end select
+		else
+			analog_set = false
+		end if
+	else
+		analog_set = false
+	end if
+
+end function
+
+function analog_13_read_channel(slot as byte, channel as byte) as integer
+	
+	dim ch as byte
+	dim byte_hi, byte_lo as byte
+	
+	select case channel
+	case 0:
+		ch = ADC_CH0
+
+	case 1:
+		ch = ADC_CH2
+
+	case 2:
+		ch = ADC_CH4
+
+	case 3:
+		ch = ADC_CH6
+
+	end select
+
+	analog_i2c_get(slot, SSI_NUM_13, SSI_BAUDRATE_13)
+	analog_i2c_start(slot)
+	analog_i2c_write(ADC_CODE_W)
+	analog_i2c_write(ch)
+	analog_i2c_stop(slot)
+	analog_i2c_start(slot)
+	analog_i2c_write(ADC_CODE_R)
+	byte_hi = analog_i2c_read(true)
+	byte_lo = analog_i2c_read(true)
+	analog_i2c_stop(slot)
+	analog_13_read_channel = byte_lo / 16 + byte_hi * 16
+
+end function
+
+sub analog_14_set_channel(slot as byte, channel as byte, value as integer)
+	
+'Programs a 12-bit value into one DAC channel.
+'The range is from 0 (-10V) to 4095 (+10V).
+
+	dim ch,valueHi,valueLow as byte
+	dim resetCounter as byte = 0
+	dim resetFlag as boolean
+
+	do
+		resetFlag = false
+		
+		analog_i2c_get(slot, SSI_NUM_14, SSI_BAUDRATE_14)
+
+		io.num = io_get_num(slot, BUSY_PIN)
+		sys.timercountms = 0
+		while io.state = LOW
+			if sys.timercountms > 100 then
+				' need Tibbit reset
+				resetFlag = true
+				resetCounter = resetCounter + 1
+
+				'reset Tibbit #14
+				analog_i2c_init(slot)
+				'set DAC control pin
+				io.num = io_get_num(slot, LOAD_PIN)
+				io.enabled = YES
+				io.lineset(io_get_num(slot, LOAD_PIN), HIGH)
+				'set RDY-BSY monitor pin
+				io.num = io_get_num(slot, BUSY_PIN)
+				io.enabled = NO
+			end if
+		wend
+
+		if resetFlag = false then
+			'The Fast Write command is used to update the input DAC register
+			'The EEPROM data is not affected by this command.
+			ch = &h40 + (channel mod 4) * 2
+
+			'To fill the DAC Input Register of Selected Channel
+			valueHi = &h90 + value / 256
+			valueLow = value and &h00FF
+
+			io.lineset(io_get_num(slot, LOAD_PIN), LOW)
+			analog_i2c_start(slot)
+			analog_i2c_write(DAC_CODE_W)
+			analog_i2c_write(ch)
+			analog_i2c_write(valueHi)
+			analog_i2c_write(valueLow)
+			analog_i2c_stop(slot)
+			io.lineset(io_get_num(slot, LOAD_PIN), HIGH)
+
+			io.num = io_get_num(slot, BUSY_PIN)
+			sys.timercountms = 0
+			while io.state = LOW
+				if sys.timercountms > 100 then
+					' need Tibbit reset
+					resetFlag = true
+					resetCounter = resetCounter + 1
+					
+					'reset Tibbit #14
+					analog_i2c_init(slot)
+					'set DAC control pin
+					io.num = io_get_num(slot, LOAD_PIN)
+					io.enabled = YES
+					io.lineset(io_get_num(slot, LOAD_PIN), HIGH)
+					'set RDY-BSY monitor pin
+					io.num = io_get_num(slot, BUSY_PIN)
+					io.enabled = NO
+				end if
+			wend
+		end if
+		
+		if resetCounter > 10 then
+			' need switch OFF Tibbit #14 in this slot
+			resetFlag = false
+			param_st(slot) = SLOT_EMPTY
+			#if SUPPORTS_DISPLAY
+				lcd_channel_fault(slot)
+			#endif
+		end if
+
+	loop while resetFlag = true
+
+end sub
+
+sub analog_ssi_init()
+
+	ssi.channel = 0								' #13, #14
+	ssi.enabled = NO
+	ssi.baudrate = 1
+	ssi.zmode = PL_SSI_ZMODE_ENABLED_ON_ZERO
+	ssi.direction = PL_SSI_DIRECTION_LEFT
+	ssi.mode = PL_SSI_MODE_0
+
+	ssi.channel = 1								' #40, CP#01(#29), CP#03(#28)
+	ssi.enabled = NO
+	ssi.baudrate = 1
+	ssi.zmode = PL_SSI_ZMODE_ENABLED_ON_ZERO
+	ssi.direction = PL_SSI_DIRECTION_LEFT
+	ssi.mode = PL_SSI_MODE_2
+
+	ssi.channel = 2								' #16, #17
+	ssi.enabled = NO
+	ssi.baudrate = 105
+	ssi.zmode = PL_SSI_ZMODE_ENABLED_ON_ZERO
+	ssi.direction = PL_SSI_DIRECTION_LEFT
+	ssi.mode = PL_SSI_MODE_2
+
+	ssi.channel = 3								' #52, #22, #53
+	ssi.enabled = NO
+	ssi.baudrate = 150
+	ssi.zmode = PL_SSI_ZMODE_ENABLED_ON_ZERO
+	ssi.direction = PL_SSI_DIRECTION_LEFT
+	ssi.mode = PL_SSI_MODE_2
+
+end sub
+
+sub analog_i2c_init(slot as byte)
+
+	io.num = io_get_num(slot, SCL_PIN)	' Get SCL pin
+	io.state = HIGH
+	io.enabled = YES
+
+	io.num = io_get_num(slot, SDA_PIN)	' Get SDA pin
+	io.state = HIGH
+	io.enabled = NO
+
+end sub
+
+sub analog_i2c_get(slot as byte, ssi_num as byte, ssi_baudrate as byte)
+	
+	ssi.channel = ssi_num
+	if analog_ssi_last_use_slot(ssi_num) <> slot then
+		ssi.enabled = NO
+		
+		io.num = ssi.clkmap
+		io.state = HIGH
+		io.num = ssi.domap
+		io.state = HIGH
+
+		ssi.baudrate = ssi_baudrate
+		ssi.clkmap = io_get_num(slot, SCL_PIN)
+		ssi.dimap = io_get_num(slot, SDA_PIN)
+		ssi.domap = io_get_num(slot, SDA_PIN)
+		analog_ssi_last_use_slot(ssi_num) = slot
+		ssi.enabled = YES
+		
+		io.num = ssi.clkmap
+		io.state = HIGH
+		io.num = ssi.domap
+		io.state = HIGH
+	end if
+	
+end sub
+
+sub analog_i2c_start(slot as byte)
+
+	io.num = io_get_num(slot, SDA_PIN)
+	io.enabled = YES
+	
+	io.lineset(io_get_num(slot, SCL_PIN), HIGH)
+	io.lineset(io_get_num(slot, SDA_PIN), HIGH)
+	io.lineset(io_get_num(slot, SDA_PIN), LOW)
+	io.lineset(io_get_num(slot, SCL_PIN), LOW)
+
+end sub
+
+sub analog_i2c_stop(slot as byte)
+
+	io.num = io_get_num(slot, SDA_PIN)
+	io.enabled = YES
+
+	io.lineset(io_get_num(slot, SDA_PIN), LOW)
+	io.lineset(io_get_num(slot, SCL_PIN), HIGH)
+	io.lineset(io_get_num(slot, SDA_PIN), HIGH)
+	
+end sub
+
+sub analog_i2c_write(data as byte)
+	
+	dim bitCnt as byte						'Bits counter	
+	dim compval as byte						'Value to compare - MASK
+	dim BitData as boolean					'Comparison result (1 or 0)
+
+	ssi.str(chr(data),PL_SSI_ACK_RX)
+
+end sub
+
+function analog_i2c_read(acknak_request as boolean) as byte
+
+	dim bitCnt as byte						'Bit counter
+	dim compval as byte						'Value to compare - MASK
+
+	dim tmp as word=0
+	if acknak_request = true then
+		tmp = ssi.value(&hFFFE, 9) / 2
+	else
+		tmp = ssi.value(&hFFFF, 9) / 2
+	end if
+
+	analog_i2c_read = tmp and &h00FF
+
+end function
+
+'===============================================================
+'	#17 PIC Coprocessor
+function analog_pic_reg_read(slot as byte, addr as word, length as byte)as string
+'Read the specified number of bytes from consequent PIC memory locations beginning from the specified address.
+
+	dim tmp as byte
+	dim data as string = ""
+
+	data = ""
+	if length=0 then
+		analog_pic_reg_read = ""
+		exit function
+	end if
+
+	analog_i2c_start(slot)
+
+	analog_i2c_write(PIC_CHIP_ADDR_W)
+	analog_i2c_write(PIC_CMD_R)
+	
+	tmp = addr / 256
+	analog_i2c_write(tmp)
+	tmp = addr or 256
+	analog_i2c_write(tmp)
+
+	analog_i2c_stop(slot)
+	analog_i2c_start(slot)
+	analog_i2c_write(PIC_CHIP_ADDR_R)
+	for tmp = 1 to length - 1
+		data = data + chr(analog_i2c_read(true))
+	next tmp
+	data = data + chr(analog_i2c_read(false))
+	analog_pic_reg_read = data
+	analog_i2c_stop(slot)
+
+end function
+
+function analog_pic_reg_write(slot as byte, addr as word, data as string)as ok_ng
+'Write the specified number of bytes into consequent PIC memory locations beginning from the specified address.
+
+	dim tmp,pos as byte 
+	dim buf as string
+
+	analog_pic_reg_write = NG
+	if data = "" then exit function
+
+	analog_i2c_start(slot)
+
+	analog_i2c_write(PIC_CHIP_ADDR_W)
+	analog_i2c_write(PIC_CMD_W)
+
+	tmp = addr / 256
+	analog_i2c_write(tmp)
+	tmp = addr or 256
+	analog_i2c_write(tmp)
+
+	buf = ""
+	for pos = 1 to len(data)
+		buf = mid(data, pos, 1)
+		analog_i2c_write(asc(buf))
+	next pos
+
+	analog_i2c_stop(slot)
+
+	analog_pic_reg_write = OK
+
+end function
+
+sub analog_pic_reset(slot as byte)
+'Calling this sub will hardware-reset the PIC micro.	
+
+	io.num = io_get_num(slot, SCL_PIN)	'PIC_CLK_PIN
+	io.enabled = YES
+	io.state = HIGH
+
+	io.num = io_get_num(slot, SDA_PIN)	'PIC_DATA_PIN
+	io.enabled = YES
+	io.state = HIGH
+
+	io.num = io_get_num(slot, RST_PIN)	'PIC_RST_PIN
+	io.enabled = YES
+	io.state = LOW
+	analog_delay_msecond(10)
+	io.state = HIGH
+	analog_delay_msecond(20)
+
+end sub
+
+function analog_pic_get_fw_version(slot as byte)as string
+'Call this function to obtain the version string for the firmware currently running on the PIC micro.
+'The version will always be in the NNN Vxx.yy format, where
+'NNN is the firmware name
+'xx -- major release (affecting the corresponding Tibbo BASIC library)
+'yy -- minor release (not affecting the corresponding Tibbo BASIC library)
+	dim s as string = ""
+	dim i as byte = 0
+
+	analog_pic_get_fw_version = ""
+
+	s = analog_pic_reg_read(slot, &h20, 1)
+	i = val("&h" + s)
+
+	if i = 0 or i > 16 then exit function
+	analog_pic_get_fw_version = analog_pic_reg_read(slot, &h21, i)
+
+end function
+
+function analog_pic_init(slot as byte) as boolean
+'Call this function to initialize the Tibbit.
+'Use_ssi argument specifies whether you want to communicate with this Tibbit using the SSI channel running in the I2C mode (YES), or
+'go for direct I/O manipulation a.k.a. bit-banging (NO).
+'Note that there is a limited number of SSI channels so if you set use_ssi=YES this function may return TBT16_NJ, meaning that
+'there are no free SSI channels left. This doesn't mean failure. Rather, it means that comms will proceed in bit banging mood.
+'The use of SSI may also be rejected (TBT16_REJ) if the PIC's clock is at 500KHz. This is because with this low speed PIC micro won't be
+'able to handle I2C comms even with the SSI's slowest baudrate.
+
+	dim s as string
+	dim value as byte
+
+	#if TBT_CLK_SOURCE <= INTERNAL_OSCILLATOR_FREQ_500KHZ_MF
+		pic_init = false
+		exit function
+	#endif
+
+	'reset co-processor
+	analog_pic_reset(slot)
+
+	analog_pic_init = true
+
+	analog_i2c_get(slot, SSI_NUM_17, SSI_BAUDRATE_17)
+	
+	'7.RXDTSEL 0 = RX/DT function is on RC5
+	'6.SDOSEL  0 = SDO function is on RC2
+	'5.SSSEL   1 = SS function is on RA3
+	'4.(don't care)
+	'3.T1GSEL  1 = T1G function is on RA3
+	'2.TXCKSEL 0 = TX/CK function is on RC4
+	'1.(don't care)
+	'0.(don't care)
+	analog_pic_reg_write(slot, PIC_APFCON0,chr(&h28))
+
+	'7.(don't care)
+	'6.(don't care)
+	'5.(don't care)
+	'4.(don't care)
+	'3.P1D  0 = P1D function is on RC2
+	'2.P1C  0 = P1C function is on RC3
+	'1.P2B  0 = P2B function is on RC2	
+	'0.CCP2 0 = CCP2 function is on RC3
+	analog_pic_reg_write(slot, PIC_APFCON1,chr(&h00))
+
+'	'00 = CCP4 is based off Timer2 in PWM mode
+'	'10 = CCP3 is based off Timer6 in PWM mode
+'	'01 = CCP2 is based off Timer4 in PWM mode
+'	'00 = CCP1 is based off Timer2 in PWM mode
+	'Configure and start Timer2/4/6
+	analog_pic_reg_write(slot, PIC_CCPTMRS0,chr(&h24))
+
+#if TBT_CLK_SOURCE=INTERNAL_OSCILLATOR_FREQ_1MHZ_HF
+'	analog_pic_reg_write(slot, PIC_OSCCON, chr(&h5A))
+#endif
+
+#if TBT_CLK_SOURCE=INTERNAL_OSCILLATOR_FREQ_2MHZ_HF
+	analog_pic_reg_write(slot, PIC_OSCCON, chr(&h32))
+#endif
+
+#if TBT_CLK_SOURCE=INTERNAL_OSCILLATOR_FREQ_4MHZ_HF
+	analog_pic_reg_write(slot, PIC_OSCCON, chr(&h3A))
+#endif
+
+#if TBT_CLK_SOURCE=INTERNAL_OSCILLATOR_FREQ_8MHZ_HF
+	analog_pic_reg_write(slot, PIC_OSCCON, chr(&h72))
+#endif
+
+#if TBT_CLK_SOURCE=INTERNAL_OSCILLATOR_FREQ_16MHZ_HF
+	analog_pic_reg_write(slot, PIC_OSCCON, chr(&h7A))
+#endif
+
+#if TBT_CLK_SOURCE=INTERNAL_OSCILLATOR_FREQ_32MHZ_HF
+	analog_pic_reg_write(PIC_OSCCON, chr(&hF0))
+#endif
+
+
+	'The ADC clock period (TAD) and total ADC conversion time can be minimized when the ADC clock is derived from the
+	'system clock FOSC.
+	analog_pic_reg_write(slot, PIC_ADCON1,chr(&hF0))
+	
+	'initialize gpio as default
+	s = analog_pic_reg_read(slot, PIC_LATA, 1)
+	value = asc(s) or &h03
+	analog_pic_reg_write(slot, PIC_LATA, chr(value))
+
+	s = analog_pic_reg_read(slot, PIC_TRISA, 1)
+	value = asc(s) or &h03
+	analog_pic_reg_write(slot, PIC_TRISA, chr(value))
+
+	s = analog_pic_reg_read(slot, PIC_LATC, 1)
+	value = asc(s) or &h03
+	analog_pic_reg_write(slot, PIC_LATC, chr(value))
+	
+	#if DEV_DEBUG_PRINT
+		value = asc(analog_pic_reg_read(slot, PIC_TRISA,1))
+		dev_debugprint("PIC_TRISA:"+hex(value))
+		value = asc(analog_pic_reg_read(slot, PIC_TRISC,1))
+		dev_debugprint("PIC_TRISC:"+hex(value))
+	#endif
+	
+	s = analog_pic_reg_read(slot, PIC_TRISC, 1)
+	value = asc(s) or &h03
+	analog_pic_reg_write(slot, PIC_TRISC, chr(value))
+
+	dim i as byte=0
+	s = ""
+	s = analog_pic_reg_read(slot, &h20, 1)
+
+	i = val("&h" + s)
+
+	if i = 0 or i > 16 then
+		analog_pic_init = false
+		exit function
+	end if
+
+	dim fw_str as string
+	fw_str = analog_pic_reg_read(slot, &h21, i)
+	if instr(1, fw_str, TBT16_FW, 1) = 0 then
+		analog_pic_init = false
+		exit function
+	end if
+
+	' Set PWM mode
+	analog_pic_config(slot)
+	if param_io(slot * 4 + 0).io_enabled = true then
+		analog_pwm_pulse(slot * 4 + 0) = val(stg_get("EV", slot * 4 + 0))
+		analog_pwm_period(slot * 4 + 0) = val(stg_get("FV", slot * 4 + 0))
+		analog_pwm_prescaler(slot * 4 + 0) = val(stg_get("GV", slot * 4 + 0))
+		analog_pwm_enable(slot * 4 + 0) = val(stg_get("HV", slot * 4 + 0))
+		analog_pic_pwm_config(slot, PIC_PWM0, analog_pwm_pulse(slot * 4 + 0), analog_pwm_period(slot * 4 + 0), analog_pwm_prescaler(slot * 4 + 0))
+		if analog_pwm_enable(slot * 4 + 0) = true then
+			analog_pic_pwm_start(slot, 0) 
+		end if
+	end if
+	if param_io(slot * 4 + 1).io_enabled = true then
+		analog_pwm_pulse(slot * 4 + 1) = val(stg_get("EV", slot * 4 + 1))
+		analog_pwm_period(slot * 4 + 1) = val(stg_get("FV", slot * 4 + 1))
+		analog_pwm_prescaler(slot * 4 + 1) = val(stg_get("GV", slot * 4 + 1))
+		analog_pwm_enable(slot * 4 + 1) = val(stg_get("HV", slot * 4 + 1))
+		analog_pic_pwm_config(slot, PIC_PWM1, analog_pwm_pulse(slot * 4 + 1), analog_pwm_period(slot * 4 + 1), analog_pwm_prescaler(slot * 4 + 1))
+		if analog_pwm_enable(slot * 4 + 1) = true then
+			analog_pic_pwm_start(slot, 1)
+		end if
+	end if
+	if param_io(slot * 4 + 2).io_enabled = true then
+		analog_pwm_pulse(slot * 4 + 2) = val(stg_get("EV", slot * 4 + 2))
+		analog_pwm_period(slot * 4 + 2) = val(stg_get("FV", slot * 4 + 2))
+		analog_pwm_prescaler(slot * 4 + 2) = val(stg_get("GV", slot * 4 + 2))
+		analog_pwm_enable(slot * 4 + 2) = val(stg_get("HV", slot * 4 + 2))
+		analog_pic_pwm_config(slot, PIC_PWM2, analog_pwm_pulse(slot * 4 + 2), analog_pwm_period(slot * 4 + 2), analog_pwm_prescaler(slot * 4 + 2))
+		if analog_pwm_enable(slot * 4 + 2) = true then
+			analog_pic_pwm_start(slot, 2)
+		end if
+	end if
+	
+end function
+
+function analog_pwm_set(channel as byte, pulse as word) as boolean
+
+	dim slot as byte
+	dim pin as byte
+	
+	slot = io_get_slot(channel)
+	pin = io_get_pin(channel)
+	
+	if param_st(slot) = SLOT_OA_3 then
+		analog_pwm_pulse(channel) = pulse
+		analog_17_set_channel(slot, pin)
+		analog_pwm_set = true
+	else
+		analog_pwm_set = false
+	end if
+	
+end function
+
+sub analog_17_set_channel(slot as byte, pin as byte)
+
+	if pin >= 0 and pin <= 3 then
+		if analog_pwm_enable(slot * 4 + pin) = true then
+			analog_pic_pwm_config(slot, pin, analog_pwm_pulse(slot * 4 + pin), analog_pwm_period(slot * 4 + pin), analog_pwm_prescaler(slot * 4 + pin))
+			analog_pic_pwm_start(slot, pin)
+		else
+			analog_pic_pwm_stop(slot, pin)
+		end if
+	end if
+	
+end sub
+
+sub analog_pic_config(slot as byte)
+'Call this sub to define the IO pin function separately for each pin. Note that somes pins do not support all functions:
+'IO -- all pins.
+'ADC -- all pins.
+'PWM -- pins 0 ~ 2. Pin 3 does not support PWM.
+'UART -- pins 0 and 1. Pin 0 is RX, pin 1 is TX. BOTH pins must be configured for UART operation, or neither pin will be in the UART mode.
+	dim s as string
+	dim value as byte
+
+	analog_i2c_get(slot, SSI_NUM_17, SSI_BAUDRATE_17)
+
+	'PIN0
+	'RC5 configured as an output
+	s=analog_pic_reg_read(slot, PIC_TRISC, 1)
+	value = asc(s)
+	value = value and &hDF
+	analog_pic_reg_write(slot, PIC_TRISC, chr(value))
+
+	'RC5 configured as digital IO
+	s=analog_pic_reg_read(slot, PIC_ANSELC, 1)
+	value = asc(s)
+	value = value and &hDF
+	analog_pic_reg_write(slot, PIC_ANSELC, chr(value))
+
+	'RA4 configured as input
+	s=analog_pic_reg_read(slot, PIC_TRISA, 1)
+	value = asc(s) or &h10
+	analog_pic_reg_write(slot, PIC_TRISA, chr(value))
+
+	s=analog_pic_reg_read(slot, PIC_ANSELA, 1)
+	value = asc(s) and &hEF
+	analog_pic_reg_write(slot, PIC_ANSELA, chr(value))
+
+	'RC3 configured as an output
+	'RC4 configured as input
+	s=analog_pic_reg_read(slot, PIC_TRISC, 1)
+	value = asc(s)
+	value = value and &hF7
+	value = value or &h10
+	analog_pic_reg_write(slot, PIC_TRISC, chr(value))
+
+	'RC3 configured as digital IO
+	s=analog_pic_reg_read(slot, PIC_ANSELC, 1)
+	value = asc(s)
+	value = value and &hF7
+	analog_pic_reg_write(slot, PIC_ANSELC, chr(value))
+
+	'PIN2
+	'RA2 configured as an output
+	s=analog_pic_reg_read(slot, PIC_TRISA, 1)
+	value = asc(s)
+	value = value and &hFB
+	analog_pic_reg_write(slot, PIC_TRISA, chr(value))
+
+	'RA2 configured as digital IO
+	s=analog_pic_reg_read(slot, PIC_ANSELA, 1)
+	value = asc(s)
+	value = value and &hFB
+	analog_pic_reg_write(slot, PIC_ANSELA, chr(value))
+
+end sub
+
+sub analog_pic_pwm_config(slot as byte, channel as byte, pulse_width as word, period as word, prescaler as pic_prescaler_enum)
+'Sets the operation parameters for the selected PWM channel.
+'This will only work for channels whose corresponding pins are running in the PWM mode [see pic_config()].
+'Pulse_width is defined as the base frequency clock count. Valid range is from 0 to 1023 in steps of 1 (0,1,2,3...).
+'Period is defined as the base frequency clock count. Valid range is from 0 to 1023 in steps of 4 (0,4,8,12...).
+'Prescaler affects the base frequency. Available choices are clock frequency divided by 1, 4, 16, or 64.
+'The clock frequency is set globally for the entire libriry using the TBT_CLK_SOURCE #define.
+'Calling this sub also starts the PWM channel [i.e. you don't need to call pic_pwm_start()].
+	
+	dim value as byte
+	dim tmp as word
+	dim rCCPxN, rCCPRxL, rTxCON, rPRx as byte(3)
+
+	analog_i2c_get(slot, SSI_NUM_17, SSI_BAUDRATE_17)
+
+	rCCPxN(channel) = &h0C
+
+	if pulse_width > 1023 then pulse_width = 1023
+	if period > 1023 then period = 1023
+	pulse_width = pulse_width - 1
+	period = (period / 4) - 1
+
+	rPRx(channel) = period
+	rCCPRxL(channel) = pulse_width / 4
+
+	'DCxBx value
+	tmp = pulse_width and &h0003
+	value = tmp * 16
+	rCCPxN(channel) = rCCPxN(channel) or value
+
+	'set prescaler and enable the timer
+	value = &h00
+	select case prescaler
+	case PIC_PRE_64:
+		value = value or 3
+
+	case PIC_PRE_16:
+		value = value or 2
+
+	case PIC_PRE_4:
+		value = value or 1
+
+	end select
+
+	rTxCON(channel) = value
+	analog_pic_ccp_rec(slot * 4 + channel) = rCCPxN(channel)
+
+	select case channel
+	case 0:
+		'Load the PRx register with the PWM period value.
+		analog_pic_reg_write(slot, PIC_PR2, chr(rPRx(channel)))
+		'Load the CCPRxL register and the DCxBx bits of the CCPxCON register, with the PWM duty cycle value.
+		analog_pic_reg_write(slot, PIC_CCPR1L, chr(rCCPRxL(channel)))
+		'load DCxBx value and configure CCP1
+		analog_pic_reg_write(slot, PIC_CCP1CON, chr(rCCPxN(channel)))
+		'Set Timer
+		analog_pic_reg_write(slot, PIC_T2CON, chr(rTxCON(channel) or &h04))
+
+	case 1:
+		'Load the PRx register with the PWM period value.
+		analog_pic_reg_write(slot, PIC_PR4, chr(rPRx(channel)))
+		'Load the CCPRxL register and the DCxBx bits of the CCPxCON register, with the PWM duty cycle value.
+		analog_pic_reg_write(slot, PIC_CCPR2L, chr(rCCPRxL(channel)))
+		'load DCxBx value and configure CCP2
+		analog_pic_reg_write(slot, PIC_CCP2CON, chr(rCCPxN(channel)))
+		'Set Timer
+		analog_pic_reg_write(slot, PIC_T4CON, chr(rTxCON(channel) or &h04))
+
+	case 2:
+		'Load the PRx register with the PWM period value.
+		analog_pic_reg_write(slot, PIC_PR6, chr(rPRx(channel)))
+		'Load the CCPRxL register and the DCxBx bits of the CCPxCON register, with the PWM duty cycle value.
+		analog_pic_reg_write(slot, PIC_CCPR3L, chr(rCCPRxL(channel)))
+		'load DCxBx value and configure CCP3
+		analog_pic_reg_write(slot, PIC_CCP3CON, chr(rCCPxN(channel)))
+		'Set Timer
+		analog_pic_reg_write(slot, PIC_T6CON, chr(rTxCON(channel) or &h04))
+
+	end select
+end sub
+
+function analog_pwm_onoff(channel as byte, en as boolean) as boolean
+	
+	dim slot as byte
+	dim pin as byte
+	
+	slot = io_get_slot(channel)
+	pin = io_get_pin(channel)
+	
+	analog_pwm_onoff = false
+
+	if param_st(slot) = SLOT_OA_3 then
+		if pin >= 0 and pin <= 3 then
+			analog_pwm_onoff = true
+			if en then
+				analog_pwm_enable(channel) = true
+				analog_pic_pwm_start(slot, pin)
+			else
+				analog_pwm_enable(channel) = false
+				analog_pic_pwm_stop(slot, pin)
+			end if
+		end if
+	end if
+	
+end function
+
+sub analog_pic_pwm_start(slot as byte, pin as byte)
+'Enables PWM output for the specified PWM channel.
+'This will only work for channels whose corresponding pins are running in the PWM mode [see pic_config()] and which
+'has already been configured with pic_pwm_config().
+	
+	dim s as string
+	dim value as byte
+
+	analog_i2c_get(slot, SSI_NUM_17, SSI_BAUDRATE_17)
+	
+	select case pin
+	case 0:
+		analog_pic_reg_write(slot, PIC_CCP1CON, chr(analog_pic_ccp_rec(slot * 4 + pin)))
+		'Set Timer
+		s=analog_pic_reg_read(slot, PIC_T2CON, 1)
+		value = asc(s) or &h04
+		analog_pic_reg_write(slot, PIC_T2CON, chr(value))
+
+	case 1:
+		analog_pic_reg_write(slot, PIC_CCP2CON, chr(analog_pic_ccp_rec(slot * 4 + pin)))
+		'Set Timer
+		s=analog_pic_reg_read(slot, PIC_T4CON, 1)
+		value = asc(s) or &h04
+		analog_pic_reg_write(slot, PIC_T4CON, chr(value))
+
+	case 2:
+		analog_pic_reg_write(slot, PIC_CCP3CON, chr(analog_pic_ccp_rec(slot * 4 + pin)))
+		'Set Timer
+		s=analog_pic_reg_read(slot, PIC_T6CON, 1)
+		value = asc(s) or &h04
+		analog_pic_reg_write(slot, PIC_T6CON, chr(value))
+
+	end select
+end sub
+
+sub analog_pic_pwm_stop(slot as byte, pin as byte)
+'Disables PWM output for the specified PWM channel.
+'This will only work for channels whose corresponding pins are running in the PWM mode [see pic_config()].	
+	
+	dim s as string
+	dim value as byte
+
+	analog_i2c_get(slot, SSI_NUM_17, SSI_BAUDRATE_17)
+
+	select case pin
+	case 0:
+		'RC5 < VIL
+		s = analog_pic_reg_read(slot, PIC_LATC, 1)
+		value = asc(s)
+		value = value and &hDF
+		analog_pic_reg_write(slot, PIC_LATC, chr(value))
+
+		s = analog_pic_reg_read(slot, PIC_CCP1CON, 1)
+		analog_pic_ccp_rec(slot * 4 + pin) = asc(s)
+		analog_pic_reg_write(slot, PIC_CCP1CON, chr(0))
+		
+		s = analog_pic_reg_read(slot, PIC_T2CON, 1)
+		value = asc(s)and &hFB
+		analog_pic_reg_write(slot, PIC_T2CON, chr(value))
+
+	case 1:
+		'RC3 < VIL
+		s = analog_pic_reg_read(slot, PIC_PORTC, 1)
+		value = asc(s)
+		value = value and &hF7
+		analog_pic_reg_write(slot, PIC_LATC, chr(value))
+
+		s = analog_pic_reg_read(slot, PIC_CCP2CON, 1)
+		analog_pic_ccp_rec(slot * 4 + pin) = asc(s)
+		analog_pic_reg_write(slot, PIC_CCP2CON, chr(0))
+
+		s = analog_pic_reg_read(slot, PIC_T4CON, 1)
+		value = asc(s)and &hFB
+		analog_pic_reg_write(slot, PIC_T4CON, chr(value))
+
+	case 2:
+		'RA2 < VIL
+		s = analog_pic_reg_read(slot, PIC_LATA, 1)
+		value = asc(s)
+		value = value and &hFB
+		analog_pic_reg_write(slot, PIC_LATA, chr(value))
+
+		s = analog_pic_reg_read(slot, PIC_CCP3CON, 1)
+		analog_pic_ccp_rec(slot * 4 + pin) = asc(s)
+		analog_pic_reg_write(slot, PIC_CCP3CON, chr(0))
+
+		s = analog_pic_reg_read(slot, PIC_T6CON, 1)
+		value = asc(s)and &hFB
+		analog_pic_reg_write(slot, PIC_T6CON, chr(value))
+
+	end select
+end sub
+
+'====================================================
+'		#52
+sub analog_52_init(slot as byte)
+
+	dim s as string
+	dim i as byte
+
+	io.num = io_get_num(slot, MCLR_PIN)
+	io.enabled = YES
+	io.lineset(io_get_num(slot, MCLR_PIN), LOW)
+	' to do delay 1 msec
+	analog_delay_msecond(1)
+	io.lineset(io_get_num(slot, MCLR_PIN), HIGH)
+	analog_delay_msecond(20)
+
+	io.num = io_get_num(slot, INT_PIN)
+	io.enabled = NO
+	
+	analog_i2c_get(slot, SSI_NUM_52, SSI_BAUDRATE_52)
+
+	analog_i2c_start(slot)
+	analog_i2c_write(&h20)
+	analog_i2c_write(&h03)
+	analog_i2c_stop(slot)
+	
+	analog_i2c_start(slot)
+	analog_i2c_write(&h21)
+
+	s = ""
+	for i = 0 to 14
+		s = s + chr(analog_i2c_read(TRUE))
+	next i
+	s = s + chr(analog_i2c_read(FALSE))
+
+	analog_i2c_stop(slot)
+
+	if TBT52_FW <> s then
+		param_st(slot) = SLOT_EMPTY		' #52 switch OFF in this slot
+		#if SUPPORTS_DISPLAY
+			lcd_channel_fault(slot)
+		#endif
+	end if
+	
+	for i = 0 to 3
+		analog_i2c_start(slot)
+		analog_i2c_write(&h20)
+		analog_i2c_write(&h02)
+		analog_i2c_write(i)
+		analog_i2c_write(&h1C)	'single mode + 16 bits +  Gain = 1
+		analog_i2c_stop(slot)
+		sys.timercountms = 0
+		while (io.lineget(io_get_num(slot, INT_PIN)) = LOW)
+			if sys.timercountms > 100 then
+				' #52 init failed
+				param_st(slot) = SLOT_EMPTY		' #52 switch OFF in this slot
+				#if SUPPORTS_DISPLAY
+					lcd_channel_fault(slot)
+				#endif
+				exit sub
+			end if
+		wend
+	next i
+	
+	if param_st(slot) = SLOT_IA_52 then	analog_52_param_read(slot)
+	
+
+end sub
+
+sub analog_52_param_read(slot as byte)
+	
+	dim value(4)as byte
+	dim r,tmp as dword
+
+	analog_i2c_get(slot, SSI_NUM_52, SSI_BAUDRATE_52)
+
+	analog_i2c_start(slot)
+	analog_i2c_write(&h20)
+	analog_i2c_write(&h06)
+	analog_i2c_stop(slot)
+	sys.timercountms = 0
+	while (io.lineget(io_get_num(slot, INT_PIN)) = LOW)
+		if sys.timercountms > 100 then
+			' #52 init failed
+			param_st(slot) = SLOT_EMPTY		' #52 switch OFF in this slot
+			exit sub
+		end if
+	wend
+
+	analog_i2c_start(slot)
+	analog_i2c_write(&h21)
+
+	' Read compensation param for channel 1
+	value(0) = analog_i2c_read(true)
+	value(1) = analog_i2c_read(true)
+	value(2) = analog_i2c_read(true)
+	value(3) = analog_i2c_read(true)
+
+	tmp = value(1) * &h10000
+	r = tmp
+	tmp = value(2) * &h100
+	r = r + tmp
+	tmp = value(3)
+	r = r + tmp
+
+	analog_52_bit_error_compensation(slot / 2, 0) = r
+	analog_52_bit_error_compensation(slot / 2, 0) = analog_52_bit_error_compensation(slot / 2, 0) / 1000000
+
+	if value(0) and &h80 then
+		value(0) = value(0) and &h7F
+		tmp = value(0) * &h1000000
+		r=tmp
+		analog_52_bit_error_compensation(slot / 2, 0) = analog_52_bit_error_compensation(slot / 2, 0) + r
+		analog_52_bit_error_compensation(slot / 2, 0) = -analog_52_bit_error_compensation(slot / 2, 0)
+	else
+		tmp = value(0) * &h1000000
+		r = tmp
+		analog_52_bit_error_compensation(slot / 2, 0) = analog_52_bit_error_compensation(slot / 2, 0) + r
+	end if
+
+	' Read compensation param for channel 2
+	value(0) = analog_i2c_read(true)
+	value(1) = analog_i2c_read(true)
+	value(2) = analog_i2c_read(true)
+	value(3) = analog_i2c_read(true)
+
+	tmp = value(1) * &h10000
+	r = tmp
+	tmp = value(2) * &h100
+	r = r + tmp
+	tmp = value(3)
+	r = r + tmp
+	analog_52_bit_error_compensation(slot / 2, 1) = r
+	analog_52_bit_error_compensation(slot / 2, 1) = analog_52_bit_error_compensation(slot / 2, 1) / 1000000
+
+	if value(0) and &h80 then
+		value(0) = value(0) and &h7F
+		tmp = value(0) * &h1000000
+		r = tmp
+		analog_52_bit_error_compensation(slot / 2, 1) = analog_52_bit_error_compensation(slot / 2, 1) + r
+		analog_52_bit_error_compensation(slot / 2, 1) = -analog_52_bit_error_compensation(slot / 2, 1)
+	else
+		tmp = value(0) * &h1000000
+		r = tmp
+		analog_52_bit_error_compensation(slot / 2, 1) = analog_52_bit_error_compensation(slot / 2, 1) + r
+	end if
+
+	' Read compensation param for channel 3
+	value(0) = analog_i2c_read(true)
+	value(1) = analog_i2c_read(true)
+	value(2) = analog_i2c_read(true)
+	value(3) = analog_i2c_read(true)
+
+	tmp = value(1) * &h10000
+	r = tmp
+	tmp = value(2) * &h100
+	r = r + tmp
+	tmp = value(3)
+	r = r + tmp
+	analog_52_bit_error_compensation(slot / 2, 2) = r
+	analog_52_bit_error_compensation(slot / 2, 2) = analog_52_bit_error_compensation(slot / 2, 2) / 1000000
+
+	if value(0) and &h80 then
+		value(0) = value(0) and &h7F
+		tmp = value(0) * &h1000000
+		r = tmp
+		analog_52_bit_error_compensation(slot / 2, 2) = analog_52_bit_error_compensation(slot / 2, 2) + r
+		analog_52_bit_error_compensation(slot / 2, 2) = -analog_52_bit_error_compensation(slot / 2, 2)
+	else
+		tmp = value(0) * &h1000000
+		r = tmp
+		analog_52_bit_error_compensation(slot / 2, 2) = analog_52_bit_error_compensation(slot / 2, 2) + r
+	end if
+
+	' Read compensation param for channel 4
+	value(0) = analog_i2c_read(true)
+	value(1) = analog_i2c_read(true)
+	value(2) = analog_i2c_read(true)
+	value(3) = analog_i2c_read(false)
+
+	tmp = value(1) * &h10000
+	r = tmp
+	tmp = value(2) * &h100
+	r = r + tmp
+	tmp = value(3)
+	r = r + tmp
+	analog_52_bit_error_compensation(slot / 2, 3) = r
+	analog_52_bit_error_compensation(slot / 2, 3) = analog_52_bit_error_compensation(slot / 2, 3) / 1000000
+
+	if value(0) and &h80 then
+		value(0) = value(0) and &h7F
+		tmp = value(0) * &h1000000
+		r = tmp
+		analog_52_bit_error_compensation(slot / 2, 3) = analog_52_bit_error_compensation(slot / 2, 3) + r
+		analog_52_bit_error_compensation(slot / 2, 3) = -analog_52_bit_error_compensation(slot / 2, 3)
+	else
+		tmp = value(0) * &h1000000
+		r = tmp
+		analog_52_bit_error_compensation(slot / 2, 3) = analog_52_bit_error_compensation(slot / 2, 3) + r
+	end if
+
+	analog_i2c_stop(slot)
+
+	while (io.lineget(io_get_num(slot, INT_PIN)) = LOW)
+	wend
+
+	#if DEV_DEBUG_PRINT
+		dev_debugprint("error compensation per bit (ch 1):" + ftostr(analog_52_bit_error_compensation(slot / 2, 0), FTOSTR_MODE_AUTO, 5))
+		dev_debugprint("error compensation per bit (ch 2):" + ftostr(analog_52_bit_error_compensation(slot / 2, 1), FTOSTR_MODE_AUTO, 5))
+		dev_debugprint("error compensation per bit (ch 3):" + ftostr(analog_52_bit_error_compensation(slot / 2, 2), FTOSTR_MODE_AUTO, 5))
+		dev_debugprint("error compensation per bit (ch 4):" + ftostr(analog_52_bit_error_compensation(slot / 2, 3), FTOSTR_MODE_AUTO, 5))
+	#endif
+
+end sub
+
+function analog_52_read_channel(slot as byte, channel as byte, byref int_data as integer) as real
+	
+dim i,hi_byte,lo_byte,config as byte
+
+	dim readCounter as byte = 0
+	dim resetCounter as byte = 0
+	dim resetFlag as boolean
+	dim tmp as word
+	dim cycle as no_yes
+	const LSB_mV = 0.00030517578125
+
+	do
+		resetFlag = false
+		cycle = NO
+
+		analog_i2c_get(slot, SSI_NUM_52, SSI_BAUDRATE_52)
+
+		do
+			do
+				readCounter = readCounter + 1
+				if readCounter > 50 then									' Timeout
+					' need reset Tibbit
+					analog_52_init(slot)
+					resetFlag = true
+					
+					#if DEV_DEBUG_PRINT
+						dev_debugprint("ERROR: Tibbit #52 resetting on the slot: " + str(slot))
+					#endif
+
+					resetCounter = resetCounter + 1
+					if resetCounter > 10 then
+						' need switch OFF this Tibbit
+						param_st(slot) = SLOT_EMPTY
+					end if
+
+					exit do
+				end if
+					
+				analog_i2c_start(slot)
+				analog_i2c_write(&h20)
+				analog_i2c_write(&h01)
+				analog_i2c_write(channel)
+				analog_i2c_stop(slot)
+
+				sys.timercountms = 0
+				while (io.lineget(io_get_num(slot, INT_PIN)) = LOW)
+					if (sys.timercountms > 100) then							' Timeout
+						' need reset Tibbit
+						analog_52_init(slot)
+						resetFlag = true
+						
+						#if DEV_DEBUG_PRINT
+							dev_debugprint("ERROR: Tibbit #52 resetting on the slot: " + str(slot))
+						#endif
+
+						resetCounter = resetCounter + 1
+						if resetCounter > 10 then
+							' need switch OFF this Tibbit
+							param_st(slot) = SLOT_EMPTY
+						end if
+						
+						exit do
+					end if
+				wend
+
+				analog_i2c_start(slot)
+				analog_i2c_write(&h21)
+				hi_byte = analog_i2c_read(TRUE)
+				lo_byte = analog_i2c_read(TRUE)
+				config = analog_i2c_read(FALSE)
+				analog_i2c_stop(slot)
+
+			loop while (config and &h80)
+
+			if resetFlag = true then exit do
+
+			if cycle = YES then
+				tmp = hi_byte * 256
+				tmp = tmp + lo_byte
+				cycle = NO
+			else
+				' start a conversion.
+				analog_i2c_start(slot)
+				analog_i2c_write(&h20)
+				analog_i2c_write(&h02)
+				analog_i2c_write(channel)
+				analog_i2c_write(&h9C)	'single mode + 16 bits +  Gain = 1
+				analog_i2c_stop(slot)
+
+				sys.timercountms = 0
+				while (io.lineget(io_get_num(slot, INT_PIN)) = LOW)
+					if (sys.timercountms > 100) then						' Timeout
+						' need reset Tibbit
+						analog_52_init(slot)
+						resetFlag = true
+						
+						#if DEV_DEBUG_PRINT
+							dev_debugprint("ERROR: Tibbit #52 resetting on the slot: " + str(slot))
+						#endif
+
+						resetCounter = resetCounter + 1
+						if resetCounter > 10 then
+							' need switch OFF this Tibbit
+							param_st(slot) = SLOT_EMPTY
+						end if
+						
+						exit do
+					end if
+				wend
+				
+				cycle = YES
+			
+			end if
+
+		loop while cycle = YES
+
+	loop while resetFlag = true and param_st(slot) <> SLOT_EMPTY
+
+
+	'
+	' conversion is done!
+	'DATA RATE								INPUT SIGNAL
+	'			NEGATIVE FULL_SCALE		-1LSB		 ZERO		 +1LSB		POSITIVE FULL_SCALE
+	'  8 SPS		&H8000				&HFFFF		&H0000		&H0001			&H7FFF
+	' 16 SPS		&HC000				&HFFFF		&H0000		&H0001			&H3FFF
+	' 32 SPS		&HE000				&HFFFF		&H0000		&H0001			&H1FFF
+	'128 SPS		&HF800				&HFFFF		&H0000		&H0001			&H7FF
+	'
+
+	if param_st(slot) = SLOT_IA_52 then
+		'#if DEV_DEBUG_PRINT
+		'	dev_debugprint("read: "+hex(tmp))
+		'#endif
+
+		' Store INTEGER value
+		int_data = tmp
+		
+		if tmp <= &h7FFF then
+			cycle = NO
+		else
+			cycle = YES
+			tmp = &hFFFF - tmp + 1
+		end if
+
+		analog_52_read_channel = analog_52_bit_error_compensation(slot / 2, channel) * tmp
+		analog_52_read_channel = analog_52_read_channel / 1000000
+		analog_52_read_channel = analog_52_read_channel + tmp * LSB_mV
+		
+		if cycle = YES then
+			analog_52_read_channel = -analog_52_read_channel
+		end if
+	else
+		#if DEV_DEBUG_PRINT
+			dev_debugprint("ERROR: Tibbit #52 switched to OFF on the slot: " + str(slot))
+		#endif
+
+		#if SUPPORTS_DISPLAY
+			lcd_channel_fault(slot)
+		#endif
+		analog_52_read_channel = 0
+	end if
+	
+
+end function
+
+'====================================================
+'		#22 RTD
+
+sub analog_22_init(slot as byte)
+
+	dim sFW as string
+	dim i as byte
+	
+	analog_i2c_get(slot, SSI_NUM_22, SSI_BAUDRATE_22)
+
+	io.num = io_get_num(slot, INT_PIN)
+	io.enabled = NO
+
+	io.num = io_get_num(slot, RST_PIN)
+	io.enabled = YES
+	io.lineset(io_get_num(slot, RST_PIN), LOW)
+	' to do delay 1 msec
+	analog_delay_msecond(1)
+	io.lineset(io_get_num(slot, RST_PIN), HIGH)
+	analog_delay_msecond(20)
+	
+	' Get FW 
+	sFW = ""
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT22_RTD_CODE_W)
+	analog_i2c_write(TBT22_RTD_CMD_FW_VER)
+	analog_i2c_stop(slot)
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT22_RTD_CODE_R)
+	for i = 0 to 14
+		sFW = sFW + chr(analog_i2c_read(TRUE))
+	next i
+	sFW = sFW + chr(analog_i2c_read(FALSE))
+	analog_i2c_stop(slot)
+
+	if sFW <> TBT22_FW then
+		' FW mismatch
+		param_st(slot) = SLOT_EMPTY		' #22 switch OFF in this slot
+		#if SUPPORTS_DISPLAY
+			lcd_channel_fault(slot)
+		#endif
+	end if
+
+	dim status as byte
+	analog_22_rtd_config(slot, analog_22_conv_mode(slot), status, analog_22_rtd_sensor_type(slot))
+
+	#if DEV_DEBUG_PRINT
+		if status and RTD_FAULT_HIGH_THRESHOLD then
+			dev_debugprint("RTD High Threshold")
+		end if
+
+		if status and RTD_FAULT_LOW_THRESHOLD then
+			dev_debugprint("RTD Low Threshold")
+		end if
+
+		if status and RTD_FAULT_REFIN then
+			dev_debugprint("REFIN- > 0.85*Vbias")
+		end if
+
+		if status and RTD_FAULT_REFIN_FORCE then
+			dev_debugprint("REFIN- < 0.85*Vbias")
+		end if
+
+		if status and RTD_FAULT_RTDIN_FORCE then
+			dev_debugprint("RTDIN- < 0.85*Vbias")
+		end if
+
+		if status and RTD_FAULT_VOLTAGE then
+			dev_debugprint("Over/Undervoltage")
+		end if
+		
+		if status and RTD_CONFIG_CHECK then
+			dev_debugprint("RTD CONFIG CHECK")
+		end if
+	#endif
+
+end sub
+
+function analog_22_read(slot as byte, byref data as real, byref int_data as integer, byref fault_detect as byte, byref fault_status as byte) as ok_ng
+	dim i, j as byte
+	dim r, hi, lo as word
+	dim rtd_a, rtd_b as real
+	
+	select case analog_22_standart(slot)
+	case ITS90:
+		rtd_a = RTD_A_ITS90
+		rtd_b = RTD_B_ITS90
+
+	case USINDUSTRIAL:
+		rtd_a = RTD_A_USINDUSTRIAL
+		rtd_b = RTD_B_USINDUSTRIAL
+		
+	case DIN43760:
+		rtd_a = RTD_A_DIN43760
+		rtd_b = RTD_B_DIN43760
+		
+	end select
+
+	analog_22_read = NG
+
+	data = 0
+	fault_detect = 0
+	fault_status = 0
+
+	analog_22_rtd_read_all(slot, i, r, hi, lo, j)
+
+	'#if DEV_DEBUG_PRINT
+	'	dev_debugprint(hex(i) + "/" + hex(r) + "/" + hex(hi) + "/" + hex(lo) + "/" + hex(j))
+	'#endif
+
+	fault_detect = i and &h0C
+	fault_status = j	
+
+	'D0 of the RTD LSBs register is a Fault bit that indicates whether any RTD faults have been detected.
+	if r and &h1 then
+		data = hi * 256 + lo
+		exit function
+	end if
+	r = r / 2
+
+	analog_22_read = OK
+	'The Callendar-Van Dusen equation is commonly used to approximate the RTD curve :
+	'
+	'	R(T) = R0[1 + aT + bT^2 + c(T - 100)T^3]
+	'
+	'For more information on measuring with an RTD, ref:
+	'
+	'	http://newton.ex.ac.uk/teaching/CDHW/Sensors/an046.pdf
+
+	dim a2, b_sq, rtd_resistance, c, d, rtd_rref, resistance as real
+
+	rtd_rref = 4000.0
+
+	' Store INTEGER value
+	int_data = r
+
+	a2 = 2.0 * rtd_b
+	b_sq = rtd_a * rtd_a
+
+	rtd_resistance = analog_22_normal_0_resistance(slot)
+	resistance = r * rtd_rref / 32768.0
+
+	'#if DEV_DEBUG_PRINT
+	'	dev_debugprint(ftostr(resistance,FTOSTR_MODE_AUTO,7)+" ohms")k
+	'#endif
+
+	c = 1.0 - (resistance / rtd_resistance)
+	d = b_sq - 2.0 * a2 * c
+
+	data = sqrt(d)
+	data = (-rtd_a + data) / a2
+
+	'#if DEV_DEBUG_PRINT
+	'	dev_debugprint(ftostr(data,FTOSTR_MODE_AUTO,7)+" oC")
+	'#endif
+
+end function
+
+function analog_22_rtd_config(slot as byte, mode as rtd_conv_mode, byref status as byte, sensor as rtd_sensor_type) as ok_ng
+
+	dim tmp, count as byte = 0
+
+	status = 0
+	analog_22_rtd_config = NG
+
+	'rtd_filter_mode = mode
+
+	analog_22_rtd_reg_write(slot, W_REG_ADDR_CONFIGURATION, &h0)
+
+	analog_22_rtd_reg_write(slot, W_REG_ADDR_LOW_FAULT_THRESHOLD_MSB, 0)
+
+	analog_22_rtd_reg_write(slot, W_REG_ADDR_LOW_FAULT_THRESHOLD_LSB, 0)
+
+	analog_22_rtd_reg_write(slot, W_REG_ADDR_HIGH_FAULT_THRESHOLD_MSB, &hFF)
+
+	analog_22_rtd_reg_write(slot, W_REG_ADDR_HIGH_FAULT_THRESHOLD_LSB, &hFF)
+
+config_write:
+	if mode = tbt22_conversion_with_50_hz_mode then
+		tmp = &hC3
+	else if mode = tbt22_conversion_with_60_hz_mode then
+		tmp = &hC2
+	end if
+	analog_22_rtd_reg_write(slot, W_REG_ADDR_CONFIGURATION, tmp)
+
+	select case sensor
+	case PT100:
+		analog_22_normal_0_resistance(slot) = 100.0
+
+	case PT200:
+		analog_22_normal_0_resistance(slot) = 200.0
+
+	case PT500:
+		analog_22_normal_0_resistance(slot) = 500.0
+
+	case PT1000:
+		analog_22_normal_0_resistance(slot) =1000.0
+
+	case else:
+		exit function
+	end select
+
+	analog_22_rtd_config = OK
+
+end function
+
+sub analog_22_rtd_reg_write(slot as byte, addr as tbt22_rtd_reg_write_addr, data as byte)
+
+	dim tmr as dword
+	
+	analog_i2c_get(slot, SSI_NUM_22, SSI_BAUDRATE_22)
+
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT22_RTD_CODE_W)
+	analog_i2c_write(TBT22_RTD_CMD_WRITE)
+	analog_i2c_write(addr)
+	analog_i2c_write(data)
+	analog_i2c_stop(slot)
+
+	'wait pic co-processor
+	sys.timercountms = 0
+	while (io.lineget(io_get_num(slot, INT_PIN)) = LOW)
+		if sys.timercountms > 100 then
+			' Timeout
+			' Tibbit is broken. Need switch OFF in this slot
+			param_st(slot) = SLOT_EMPTY		' #22 switch OFF in this slot
+			#if SUPPORTS_DISPLAY
+				lcd_channel_fault(slot)
+			#endif
+			exit sub
+		end if
+	wend
+
+end sub
+
+sub analog_22_rtd_read_all(slot as byte, byref config as byte, byref rtd as word, byref hi_fault as word, byref lo_fault as word, byref fault as byte)
+
+	dim tmp as byte = 0
+	dim resetCounter as byte = 0
+	dim resetFlag as boolean
+
+	analog_i2c_get(slot, SSI_NUM_22, SSI_BAUDRATE_22)
+
+	'wait pic co-processor
+	sys.timercountms = 0
+	while (io.lineget(io_get_num(slot, INT_PIN)) = LOW)
+		if sys.timercountms > 100 then
+			' Timeout
+			' need reset Tibbit
+			analog_22_init(slot)
+			resetCounter = resetCounter + 1
+			if resetCounter > 10 then
+				' Tibbit is broken. Need switch OFF in this slot
+				param_st(slot) = SLOT_EMPTY		' #22 switch OFF in this slot
+				#if SUPPORTS_DISPLAY
+					lcd_channel_fault(slot)
+				#endif
+				exit sub
+			end if
+		end if
+	wend
+
+	do
+		resetFlag = false
+		
+		analog_i2c_start(slot)
+		analog_i2c_write(TBT22_RTD_CODE_W)
+		analog_i2c_write(TBT22_RTD_CMD_READ)
+		analog_i2c_stop(slot)
+
+		analog_i2c_start(slot)
+		analog_i2c_write(TBT22_RTD_CODE_R)
+
+		'wait pic co-processor to fetch the data ...
+		sys.timercountms = 0
+		while (io.lineget(io_get_num(slot, INT_PIN)) = LOW)
+			if sys.timercountms > 100 then
+				' Timeout
+				' need reset Tibbit
+				analog_22_init(slot)
+				resetCounter = resetCounter + 1
+				resetFlag = true
+				if resetCounter > 10 then
+					' Tibbit is broken. Need switch OFF in this slot
+					param_st(slot) = SLOT_EMPTY		' #22 switch OFF in this slot
+					#if SUPPORTS_DISPLAY
+						lcd_channel_fault(slot)
+					#endif
+					exit sub
+				end if
+			end if
+		wend
+
+		if resetFlag = false then
+			
+			config = analog_i2c_read(true)					'byte 0
+			tmp = analog_i2c_read(true)						'byte 1
+			rtd = tmp * 256 + analog_i2c_read(true)			'byte 2
+			tmp = analog_i2c_read(true)						'byte 3
+			hi_fault = tmp * 256 + analog_i2c_read(true)	'byte 4
+			tmp = analog_i2c_read(true)						'byte 5
+			lo_fault = tmp * 256 + analog_i2c_read(true)	'byte 6
+			fault = analog_i2c_read(false)					'byte 7
+			analog_i2c_stop(slot)
+		
+		end if
+		
+	loop while resetFlag = true
+	
+end sub
+
+'====================================================
+'		#40x Potentiometert
+
+sub analog_40_init(slot as byte)
+	
+	analog_i2c_get(slot, SSI_NUM_40, SSI_BAUDRATE_40)
+	
+	if analog_40_reg_read(slot, TBT40_STATUS) <> &h01F0 then
+		#if DEV_DEBUG_PRINT=1
+			dev_debugprint("#40x status register incorrect. slot: " + str(slot))
+		#endif
+		param_st(slot) = SLOT_EMPTY		' #40x switch OFF in this slot
+		#if SUPPORTS_DISPLAY
+			lcd_channel_fault(slot)
+		#endif
+	end if
+
+	'enable all terminals
+	analog_40_reg_write(slot, TBT40_VOLATILE_TCON, &h000F)
+	analog_40_reg_read(slot, TBT40_VOLATILE_TCON)
+
+end sub
+
+sub analog_40_set(slot as byte, value as real)
+'Sets the digital potentiometer to the level (step) in the 0-256 range (there are 257 steps in total). Each step is equal to 1/257th of the IC's range
+'(5K, 10K, 50K, or 100K depending on the IC type). Step=0 indicates a near-zero impedance between the I/O lines 3 and 4 of this Tibbit.
+'At the same time, the impedance between I/O lines 2 and 3 will be at maximum.
+'Save_to_eeprom argument specifies whether the new impedance value will be saved into the EEPROM (and thus persist even after the IC is power-cycled).
+
+	dim level as word
+	
+    level = value mod 257
+
+	analog_i2c_get(slot, SSI_NUM_40, SSI_BAUDRATE_40)
+	
+	analog_40_reg_write(slot, TBT40_VOLATILE_WIPER_0, level)
+
+end sub
+
+sub analog_40_reg_write(slot as byte, addr as tbt40_regs, data as word)
+	dim cmd as byte
+
+	if data and &h0100 then
+		cmd = addr + 1
+	else
+		cmd = addr
+	end if
+
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT40_WRITE_ADDR)
+	analog_i2c_write(cmd)
+	analog_i2c_write(data and &h00FF)
+	analog_i2c_stop(slot)
+
+end sub
+
+function analog_40_reg_read(slot as byte, addr as tbt40_regs)as word
+
+	analog_40_reg_read=0
+
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT40_WRITE_ADDR)
+	analog_i2c_write(addr + &hC)				'READ Command
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT40_READ_ADDR)
+	analog_40_reg_read = analog_i2c_read(true) * 256
+	analog_40_reg_read = analog_40_reg_read + analog_i2c_read(false)
+	analog_i2c_stop(slot)
+
+end function
+
+'====================================================
+'		#53
+sub analog_53_init(slot as byte)
+
+	dim s as string
+	dim i as byte
+	dim hi_byte, lo_byte, config as byte
+
+	analog_i2c_get(slot, SSI_NUM_53, SSI_BAUDRATE_53)
+
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT53_WRITE_ADDR)
+	analog_i2c_write(&h0C)
+	analog_i2c_stop(slot)
+
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT53_READ_ADDR)
+	hi_byte = analog_i2c_read(true)
+	lo_byte = analog_i2c_read(true)
+	config = analog_i2c_read(false)
+	analog_i2c_stop(slot)
+
+	#if DEV_DEBUG_PRINT
+		dev_debugprint("slot: " + str(slot) + ", lo: " + hex(lo_byte) + ", hi: " + hex(hi_byte) + ", conf: " + hex(config) + ".")
+	#endif
+
+end sub
+
+function analog_53_read(slot as byte, byref int_data as integer) as real
+	
+	dim hi_byte, lo_byte as byte
+	dim tmp as word
+	dim rtn as real
+
+	const LSB_V = 0.000152587890625	'  5 V / 323768
+	const mA_On_V = 0.0032			' (20 mA - 4 mA) / 5000 mV
+
+	analog_i2c_get(slot, SSI_NUM_53, SSI_BAUDRATE_53)
+	
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT53_READ_ADDR)
+	hi_byte = analog_i2c_read(true)
+	lo_byte = analog_i2c_read(true)
+	analog_i2c_stop(slot)
+
+	tmp = hi_byte * 256 + lo_byte
+
+	' Store INTEGER value
+	int_data = tmp
+
+	if tmp <= &h7FFF then
+		rtn = tmp * LSB_V
+	else
+		rtn = &hFFFF - tmp + 1
+		rtn = -(rtn * LSB_V)
+	end if
+
+	#if DEV_DEBUG_PRINT
+		dev_debugprint("slot: " + str(slot) + ", #53 readed " + ftostr(rtn, FTOSTR_MODE_AUTO, 5) + ".")
+	#endif
+
+	if rtn < -0.6 then
+		analog_53_read = 0
+	else
+		analog_53_read = rtn * mA_On_V + 0.004
+	end if
+
+
+end function
+
+'====================================================
+'		#29 CP#03
+function analog_29_read_data(slot as byte, op as tbt29_regs) as word
+	
+	dim upper, lower as byte
+
+	upper = 0
+	lower = 0
+	analog_i2c_get(slot, SSI_NUM_29, SSI_BAUDRATE_29)
+
+	analog_i2c_start(slot)
+	'send address + op
+	analog_i2c_write(TBT29_WRITE_ADDR)
+	analog_i2c_write(op)
+	
+	analog_i2c_start(slot)
+
+	analog_i2c_write(TBT29_READ_ADDR)
+
+	if op = TBT29_REG_RESOL then
+		lower = analog_i2c_read(true)
+	else
+		upper = analog_i2c_read(true)
+		lower = analog_i2c_read(false)
+	end if
+
+	analog_i2c_stop(slot)
+
+	analog_29_read_data = upper * 256 + lower
+
+end function
+
+sub analog_29_write_data(slot as byte, op as tbt29_regs, data as word)
+	
+	dim value as byte
+	
+	analog_i2c_get(slot, SSI_NUM_29, SSI_BAUDRATE_29) 
+	analog_i2c_start(slot)
+
+	analog_i2c_write(TBT29_WRITE_ADDR)
+	analog_i2c_write(op)
+
+	if op = TBT29_REG_RESOL then
+		value = data and &h00FF
+		analog_i2c_write(value)
+	else
+		value = (data and &hFF00) shr 8
+		analog_i2c_write(value)
+		value = data and &h00FF
+		analog_i2c_write(value)		
+	end if
+	
+	analog_i2c_stop(slot)
+
+end sub
+
+sub analog_29_init(slot as byte)
+'Call this function to initialize the Tibbit.
+
+	analog_i2c_get(slot, SSI_NUM_29, SSI_BAUDRATE_29) 
+
+	'check the TBT29_MFG_ID
+	if analog_29_read_data(slot, TBT29_REG_MFGID) <> TBT29_MFG_ID then
+		#if DEV_DEBUG_PRINT
+			dev_debugprint("#29: MFG_ID ERROR, Slot: " + str(slot))
+		#endif 
+		' Switch OFF slot - WRONG_MFGID
+		param_st(slot) = SLOT_EMPTY
+		exit sub
+	end if
+
+	'check the TBT29_DEVID + MCP9808_DEFAULT_REVISION
+	if analog_29_read_data(slot, TBT29_REG_IDREV) <> TBT29_DEVID then
+		#if DEV_DEBUG_PRINT
+			dev_debugprint("#29: DEVICE ID & REVISION ERROR, Slot: " + str(slot))
+		#endif 
+		' Switch OFF slot - WRONG_DEVID_REVISION
+		param_st(slot) = SLOT_EMPTY
+		exit sub
+	end if
+
+	'resolution :+0.25 C (tCONV = 65 ms typical)
+	analog_29_write_data(slot, TBT29_REG_RESOL,TBT29_RESOLUSION_MODE_1)
+
+end sub
+
+function analog_29_read_value(slot as byte) as integer
+'Returns the signed integer value expressing the temperature in 0.25 deg. C steps.
+
+	dim r as word
+	dim t_integer as word
+	dim t_fraction as byte
+	
+	analog_i2c_get(slot, SSI_NUM_29, SSI_BAUDRATE_29) 
+
+	r = analog_29_read_data(slot, TBT29_REG_TA)
+
+	#if DEV_DEBUG_PRINT
+		dev_debugprint("Slot: " + str(slot) + ", #29: Raw temperature:" + hex(r))
+	#endif
+
+	if r and &h1000 then
+		'temperature is negative
+		t_integer = (r and &h0FFF) shr 4
+		t_fraction = (r and &h000F) shr 2
+		analog_29_read_value = 1024 - ((t_integer*4) + t_fraction)
+	else	
+		'temperature is positive
+		t_integer = (r and &h0FFF) shr 4
+		t_fraction = (r and &h000F) shr 2
+		analog_29_read_value = (t_integer*4) + t_fraction
+	end if
+	
+end function
+
+function analog_29_read(slot as byte, byref data as word) as real
+'Returns the signed floating point value expressing the temperature in deg. C.
+
+	data = analog_29_read_value(slot)
+	analog_29_read = data
+	analog_29_read = analog_29_read / 4
+
+	#if DEV_DEBUG_PRINT
+		dev_debugprint("slot: " + str(slot) + ", #29 readed " + ftostr(analog_29_read, FTOSTR_MODE_AUTO, 5) + ".")
+	#endif
+
+end function
+
+'======================================================================
+'	#28 CP#03 Light
+
+sub analog_28_cmd_send(slot as byte, cmd as byte)
+
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT28_WRITE_ADDR)
+	analog_i2c_write(cmd)
+	analog_i2c_stop(slot)
+	
+end sub
+
+sub analog_28_init(slot as byte)
+'Call this function to initialize the Tibbit.	
+
+	analog_i2c_get(slot, SSI_NUM_28, SSI_BAUDRATE_28)
+
+	'Switch sensor to power down mode
+	analog_28_cmd_send(slot, TBT28_CMD_POWER_DOWN)
+
+	'Switch sensor to power on mode
+	analog_28_cmd_send(slot, TBT28_CMD_POWER_ON)
+
+	'Switch sensor to high resolution mode
+	analog_28_cmd_send(slot, TBT28_CMD_HRESOL_0)
+
+	'Wait to complete 1st Auto-resolution mode measurement.(max. 180 ms)
+	analog_delay_msecond(180)
+
+end sub
+
+function analog_28_read(slot as byte) as word
+'Returns a 16-bit number expressing relative ambient light intensity.
+	dim upper,lower as byte
+	
+	analog_i2c_get(slot, SSI_NUM_28, SSI_BAUDRATE_28)
+
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT28_READ_ADDR)
+	upper = analog_i2c_read(true)
+	lower = analog_i2c_read(false)
+	analog_i2c_stop(slot)
+
+	analog_28_read = upper*256 + lower
+
+	#if DEV_DEBUG_PRINT
+		dev_debugprint("slot: " + str(slot) + ", #28 readed " + str(analog_28_read) + ".")
+	#endif
+
+end function
+
+'======================================================================
+'	#30 CP#02 Temp&Hum
+
+sub analog_30_init(slot as byte)
+
+	analog_i2c_get(slot, SSI_NUM_30, SSI_BAUDRATE_30)
+
+	'send the measurement request
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT30_WRITE_ADDR)
+	analog_i2c_stop(slot)
+
+end sub
+
+function analog_30_get(slot as byte, byref humidity as word, byref temperature as word)as ok_ng
+'Returns humidity and temperature data expressed as 16-bit unsigned values.
+'See how the conversion into "real" values is done in analog_30_read().
+'NOTE: this call may fail, so check the ON/NG status returned by the function.
+
+	dim status as tbt30_status
+	dim data1, data2, data3, data4, tmp1, hi, lo, temp2 as byte
+	
+	analog_i2c_get(slot, SSI_NUM_30, SSI_BAUDRATE_30)
+
+	'fetch humidity data
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT30_READ_ADDR)
+	data1 = analog_i2c_read(true)
+	data2 = analog_i2c_read(true)
+	data3 = analog_i2c_read(true)
+	data4 = analog_i2c_read(false)
+	analog_i2c_stop(slot)
+
+	status = data1 and &h80
+	status = status shr 7
+	status = (status and &h40) shr 6
+
+	#if DEV_DEBUG_PRINT
+		dev_debugprint("-status(" + str(status) + ")-")
+		dev_debugprint("     data1:" + str(hex(data1)))
+		dev_debugprint("     data2:" + str(hex(data2)))
+		dev_debugprint("     data3:" + str(hex(data3)))
+		dev_debugprint("     data4:" + str(hex(data4)))
+	#endif
+	
+	select case status
+	case TBT30_STATUS_NORMAL_OPERATION:
+		#if DEV_DEBUG_PRINT
+			dev_debugprint("TBT30_STATUS_NORMAL_OPERATION")
+		#endif
+		analog_30_get = OK
+	
+	case TBT30_STAUTS_STALE_DATA:
+		#if DEV_DEBUG_PRINT
+				dev_debugprint("TBT30_STATUS_STALE_DATA")
+		#endif
+		analog_30_get = NG
+		exit function
+	
+	case TBT30_STAUTS_IN_COMMAND_MODE:
+		#if DEV_DEBUG_PRINT
+				dev_debugprint("TBT30_STATUS_IN_COMMAND_MODE")
+		#endif
+		analog_30_get = NG
+		exit function
+	
+	case TBT30_STAUTS_NOT_USED:
+		#if DEV_DEBUG_PRINT
+				dev_debugprint("TBT30_STATUS_NOT_USED")
+		#endif
+		analog_30_get = NG
+		exit function
+	
+	case else:
+	end select
+
+	'humidity:   Data1 [13:6] + Data2 [7:0]
+	'temerature: Data3 [13:6] + Data4 [5:0]
+	tmp1 = data1*4
+	humidity = tmp1*64 + data2
+	
+	#if DEV_DEBUG_PRINT
+		dev_debugprint("Raw humidity value=" + hex(tmp1*64 + data2))
+	#endif
+
+	tmp1 = data3*4
+	tmp1 = tmp1/16
+	hi = data3/64*16
+	hi = hi + tmp1
+
+	tmp1 = data3 and &h03
+	tmp1 = tmp1*64
+	
+	temp2 = data4 and &hC0
+	temp2 = temp2/4
+	lo = tmp1 + temp2
+
+	tmp1 = data4 and &h3C
+	tmp1 = tmp1/4
+	lo = lo + tmp1
+
+	temperature = hi*256 + lo
+	
+	'send the measurement request
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT30_WRITE_ADDR)
+	analog_i2c_stop(slot)
+
+	#if DEV_DEBUG_PRINT
+		dev_debugprint("Raw temperature value=" + hex(temperature))
+	#endif
+	
+end function
+
+function analog_30_read(slot as byte, byref humword as word, byref humidity as float, byref tempword as word, byref temperature as float) as ok_ng
+'Returns "real" humidity and temperature data expressed in %PH and degrees C.
+'NOTE: this call may fail, so check the ON/NG status returned by the function.
+	
+	analog_30_read = analog_30_get(slot, humword, tempword)
+	
+	humidity = humword
+	humidity = (humidity*100) / 16383
+	humword = humidity * 10
+
+	temperature = tempword
+	temperature = temperature / 16383
+	temperature = temperature * 165
+	temperature = temperature - 40
+	tempword = temperature * 10
+
+end function
+
+'======================================================================
+'	#35 Pressure
+
+sub analog_35_init(slot as byte)
+'Call this function to initialize the Tibbit.
+	dim tmp as byte
+	dim a0_tmp, b1_tmp, b2_tmp, c12_tmp, tmp2 as word
+
+	analog_i2c_get(slot, SSI_NUM_35, SSI_BAUDRATE_35)
+
+	analog_i2c_start(slot)
+
+	analog_i2c_write(TBT35_WRITE_ADDR)
+	analog_i2c_write(TBT35_CMD_READ_COEFFICIENT)
+
+	analog_i2c_start(slot)
+
+	analog_i2c_write(TBT35_READ_ADDR)
+
+	'a0
+	tmp = analog_i2c_read(true)
+	a0_tmp = tmp * 256
+	tmp = analog_i2c_read(true)
+	a0_tmp = a0_tmp + tmp
+
+	'b1
+	tmp = analog_i2c_read(true)
+	b1_tmp = tmp*256
+	tmp = analog_i2c_read(true)
+	b1_tmp = b1_tmp+tmp
+
+	'b2
+	tmp = analog_i2c_read(true)
+	b2_tmp = tmp*256
+	tmp = analog_i2c_read(true)
+	b2_tmp = b2_tmp+tmp
+
+	'c12
+	tmp = analog_i2c_read(true)
+	c12_tmp = tmp * 256
+	tmp = analog_i2c_read(false)
+	c12_tmp = c12_tmp+tmp
+	analog_i2c_stop(slot)
+
+	'a0 :signed, integer bits=12,fractional bits=3
+	a0 = a0_tmp and &h7FF8
+	a0 = a0/8
+
+	tmp2 = a0_tmp and &h0007
+	'Negative coefficients are coded in 2's complement notation
+	if a0_tmp and &h8000 then
+		a0 = 4095 - a0
+		tmp2 = &h7 - a0_tmp
+	end if
+	'f2
+	if tmp2 and &h04 then
+		a0 = a0 + 0.5
+	end if
+	'f1
+	if tmp2 and &h02 then
+		a0 = a0 + 0.25
+	end if
+	'f0
+	if tmp2 and &h01 then
+		a0 = a0 + 0.125
+	end if
+	
+	if a0_tmp and &h8000 then
+		a0 = -a0
+	end if
+
+	'b1	:signed, integer bits=2,fractional bits=13
+	b1 = b1_tmp and &h6000
+	b1 = b1 / 8192
+	tmp2 = b1_tmp and &h1FFF
+
+	'Negative coefficients are coded in 2's complement notation
+	if b1_tmp and &h8000 then
+		b1 = 3 - b1
+		tmp2 = &h1FFF - b1_tmp
+	end if
+	'f12
+	if tmp2 and &h1000 then
+		b1 = b1 + 0.5
+	end if
+	'f11
+	if tmp2 and &h800 then
+		b1 = b1 + 0.25
+	end if
+	'f10
+	if tmp2 and &h400 then
+		b1 = b1 + 0.125
+	end if
+	'f9
+	if tmp2 and &h200 then
+		b1 = b1 + 0.0625
+	end if
+	'f8
+	if tmp2 and &h100 then
+		b1 = b1 + 0.03125
+	end if
+	'f7
+	if tmp2 and &h80 then
+		b1 = b1 + 0.015625
+	end if
+	'f6
+	if tmp2 and &h40 then
+		b1 = b1 + 0.0078125
+	end if
+	'f5
+	if tmp2 and &h20 then
+		b1 = b1 + 0.00390625
+	end if
+	'f4
+	if tmp2 and &h10 then
+		b1 = b1 + 0.001953125
+	end if
+	'f3
+	if tmp2 and &h08 then
+		b1 = b1 + 0.0009765625
+	end if
+	'f2
+	if tmp2 and &h04 then
+		b1 = b1 + 0.00048828125
+	end if
+	'f1
+	if tmp2 and &h02 then
+		b1 = b1 + 0.000244140625
+	end if
+	'f0
+	if tmp2 and &h01 then
+		b1 = b1 + 0.0001220703125
+	end if
+
+	if b1_tmp and &h8000 then
+		b1 = -b1
+	end if
+
+	'b2	:signed, integer bits=1,fractional bits=14
+	b2 = b2_tmp and &h4000
+	b2 = b2 / 16384
+	tmp2 = b2_tmp and &h3FFF
+
+	'Negative coefficients are coded in 2's complement notation
+	if b2_tmp and &h8000 then
+		b2 = 1 - b2
+		tmp2 = &h3FFF - b2_tmp
+	end if
+
+	'f13
+	if tmp2 and &h2000 then
+		b2 = b2 + 0.5
+	end if
+	'f12
+	if tmp2 and &h1000 then
+		b2 = b2 + 0.25
+	end if
+	'f11
+	if tmp2 and &h800 then
+		b2 = b2 + 0.125
+	end if
+	'f10
+	if tmp2 and &h400 then
+		b2 = b2 + 0.0625
+	end if
+	'f9
+	if tmp2 and &h200 then
+		b2 = b2 + 0.03125
+	end if
+	'f8
+	if tmp2 and &h100 then
+		b2 = b2 + 0.015625
+	end if
+	'f7
+	if tmp2 and &h80 then
+		b2 = b2 + 0.0078125
+	end if
+	'f6
+	if tmp2 and &h40 then
+		b2 = b2 + 0.00390625
+	end if
+	'f5
+	if tmp2 and &h20 then
+		b2 = b2 + 0.001953125
+	end if
+	'f4
+	if tmp2 and &h10 then
+		b2 = b2 + 0.0009765625
+	end if
+	'f3
+	if tmp2 and &h08 then
+		b2 = b2 + 0.00048828125
+	end if
+	'f2
+	if tmp2 and &h04 then
+		b2 = b2 + 0.000244140625
+	end if
+	'f1
+	if tmp2 and &h02 then
+		b2 = b2 + 0.0001220703125
+	end if
+	'f0
+	if tmp2 and &h01 then
+		b2 = b2 + 0.00006103515625
+	end if
+
+	if b2_tmp and &h8000 then
+		b2 = -b2
+	end if
+
+	'c12;signed, integer bits=0,fractional bits=13,dec pt zero pad=9
+	tmp2 = c12_tmp /4
+	tmp2 = tmp2 and &h1FFF
+
+	'Negative coefficients are coded in 2's complement notation
+	if c12_tmp and &h8000 then
+		c12 = -c12
+		tmp2 = &h1FFF - b2_tmp
+	end if
+
+	c12 = 0.0
+	'f12
+	if tmp2 and &h1000 then
+		c12 = c12 + 0.0009765625
+	end if
+	'f11
+	if tmp2 and &h800 then
+		c12 = c12 + 0.00048828125
+	end if
+	'f10
+	if tmp2 and &h400 then
+		c12 = c12 + 0.000244140625
+	end if
+	'f9
+	if tmp2 and &h200 then
+		c12 = c12 + 0.0001220703125
+	end if
+	'f8
+	if tmp2 and &h100 then
+		c12 = c12 + 0.00006103515625
+	end if
+	'f7
+	if tmp2 and &h80 then
+		c12 = c12 + 0.000030517578125
+	end if
+	'f6
+	if tmp2 and &h40 then
+		c12 = c12 + 0.0000152587890625
+	end if
+	'f5
+	if tmp2 and &h20 then
+		c12 = c12 + 0.00000762939453125
+	end if
+	'f4
+	if tmp2 and &h10 then
+		c12 = c12 + 0.000003814697265625
+	end if
+	'f3
+	if tmp2 and &h08 then
+		c12 = c12 + 0.0000019073486328125
+	end if
+	'f2
+	if tmp2 and &h04 then
+		c12 = c12 + 0.00000095367431640625
+	end if
+	'f1
+	if tmp2 and &h02 then
+		c12 = c12 + 0.000000476837158203125
+	end if
+	'f0
+	if tmp2 and &h01 then
+		c12 = c12 + 0.0000002384185791015625
+	end if
+
+	if c12_tmp and &h8000 then
+		c12 = -c12
+	end if
+
+	#if DEV_DEBUG_PRINT
+		dev_debugprint("a0  :"+ftostr(a0,FTOSTR_MODE_AUTO,36))
+		dev_debugprint("b1  :"+ftostr(b1,FTOSTR_MODE_AUTO,36))
+		dev_debugprint("b2  :"+ftostr(b2,FTOSTR_MODE_AUTO,36))
+		dev_debugprint("c12 :"+ftostr(c12,FTOSTR_MODE_AUTO,36))
+	#endif
+
+end sub
+
+function analog_35_read(slot as byte, byref pressureFloat as float)as word
+'Returns the floating point value expressing the pressure in kPa.
+	dim tmp as byte
+	dim padc, tadc as word=0
+	dim c12x2, a1, a1x1, y1, a2x2, pcomp as float
+
+	analog_i2c_get(slot, SSI_NUM_35, SSI_BAUDRATE_35)
+	
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT35_WRITE_ADDR)
+	analog_i2c_write(TBT35_CMD_START_CONVERSION)
+	analog_i2c_write(&h00)
+	analog_i2c_stop(slot)
+
+	'Time between start convert command and data available in the Pressure and Temperature registers
+	analog_delay_msecond(1)
+
+	analog_i2c_start(slot)
+
+	analog_i2c_write(TBT35_WRITE_ADDR)
+	analog_i2c_write(TBT35_CMD_READ_PRESSURE)
+
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT35_READ_ADDR)
+
+	'pressure
+	tmp = analog_i2c_read(true)
+	padc = tmp * 256
+	tmp = analog_i2c_read(true)
+	padc = padc + tmp
+
+	'temprature
+	tmp = analog_i2c_read(true)
+	tadc = tmp * 256
+	tmp = analog_i2c_read(false)
+	tadc = tadc + tmp
+
+	analog_i2c_stop(slot)
+
+	padc = padc /64
+	tadc = tadc /64
+
+	'Pcomp = a0 + (b1 + c12 .Tadc) . Padc + b2 . Tadc
+	c12x2 = c12 * tadc
+	a1 = b1 + c12x2
+	a1x1 = a1 * padc
+	y1 = a0 + a1x1
+	a2x2 = b2 * tadc
+	pcomp = y1 + a2x2
+	
+	'kpa=pcomp*(115-50)/1023 +50
+	pressureFloat = pcomp * (115 - 50) / 1023 + 50
+	analog_35_read = pressureFloat * 100
+
+	#if DEV_DEBUG_PRINT
+		dev_debugprint("padc/tadc"+str(padc)+"/"+str(tadc))
+	#endif
+	
+end function
+
+sub analog_delay_msecond(value as word)
+
+	sys.timercountms = 0
+	while sys.timercountms < value
+	wend
+
+end sub

@@ -1,0 +1,31 @@
+
+enum io_counter_mode
+	io_counter_disabled,
+	io_counter_rise,
+	io_counter_edge,
+	io_counter_both
+end enum
+
+type io_counter
+	mode as io_counter_mode
+	counter as dword
+end type
+
+enum io_cprobe
+	IO_CPROBE_DISABLE,
+	IO_CPROBE_TEMP,
+	IO_CPROBE_TEMPHUM,
+	IO_CPROBE_LIGHT,
+	IO_CPROBE_PRESSURE
+end enum
+
+declare io_cn(NUM_OF_IO) as io_counter
+declare io_cprobes(NUM_I2C_SLOTS) as io_cprobe
+
+declare sub setup_io()
+declare function io_get_num(socket as byte, pin as byte) as byte
+declare sub digital_loop()
+declare function io_set(channel as word, value as low_high) as boolean
+declare function io_get_pin(channel as byte) as byte
+declare function io_get_slot(channel as byte) as byte
+declare function io_get_numc(channel as byte) as byte

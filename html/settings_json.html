@@ -1,0 +1,11 @@
+<?
+
+#include "utils.th";
+
+extern void send_settings();
+extern ok_ng password_verify();
+
+if (password_verify() == OK)
+	send_settings();
+
+?>
