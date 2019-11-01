@@ -1,6 +1,6 @@
 [project]
 version=1
-platform=TPP2W(G2)
+platform=TPP3W(G2)
 src_lib_ver=2_01_02
 name=RemoteIO
 output=RemoteIO.tpc
@@ -728,5 +728,6 @@ location=project
 path=bp_list.html
 type=htmlc
 format=65001
+condition=
 locked=no
 location=project
