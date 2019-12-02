@@ -1,11 +1,11 @@
 [project]
 version=1
-platform=TPP3W(G2)
+platform=TPP2W(G2)
 src_lib_ver=2_01_02
 name=RemoteIO
 output=RemoteIO.tpc
 debug=off
-defines= /dLCD_TYPE=SOLOMON_SSD1963_FIXED_IO2 /dUSE_DNS=0 /dOBJECT_LCD=LCD_ENABLED /dOBJECT_FD=FD_ENABLED /dOBJECT_KP=KP_ENABLED /dSUPPORTS_GPRS=0 /dOBJECT_WLN=WLN_ENABLED
+defines= /dUSE_DNS=0 /dLCD_TYPE=SOLOMON_SSD1963_FIXED_IO2 /dOBJECT_LCD=LCD_ENABLED /dOBJECT_FD=FD_ENABLED /dOBJECT_KP=KP_ENABLED /dSUPPORTS_GPRS=0 /dOBJECT_WLN=WLN_ENABLED
 transport=udp_broadcast
 [address1]
 platform=EM1206W
@@ -38,7 +38,7 @@ address=0.36.119.81.194.117
 [address8]
 platform=TPP3W(G2)
 transport=udp_broadcast
-address=0.36.119.86.88.187
+address=0.36.119.82.191.240
 [address9]
 platform=EM2000
 transport=udp_broadcast
@@ -729,5 +729,23 @@ path=bp_list.html
 type=htmlc
 format=65001
 condition=
+locked=no
+location=project
+[file97]
+path=bp_find.html
+type=htmlc
+format=65001
+locked=no
+location=project
+[file98]
+path=onewire.tbh
+type=header
+format=65001
+locked=no
+location=project
+[file99]
+path=onewire.tbs
+type=basic
+format=65001
 locked=no
 location=project

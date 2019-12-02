@@ -1,0 +1,63 @@
+include "global.tbh"
+
+#if PLATFORM_ID = TPP3WG2
+	#define ONEWIRE_SLOTS	11
+#elif PLATFORM_ID = TPP2WG2
+	#define ONEWIRE_SLOTS	6
+#endif
+
+dim oneWire_Tibbits(ONEWIRE_SLOTS) as ONEWIRE_TIBBIT
+dim oneWire_setupPollingTime as byte
+
+sub oneWire_Init()
+
+	dim i, j as byte
+	
+	oneWire_setupPollingTime = val(stg_get("WO", 0))	' Get Polling Time for OneWire
+	
+	for i = 0 to ONEWIRE_SLOTS - 1
+		for j = 0 to BP_SENSORS_MAX_ON_PORT - 1
+			oneWire_Tibbits(i).portA.sensors(j).Sensor_ID = ""
+			oneWire_Tibbits(i).portA.sensors(j).Sensor_Type = OW_NONE
+			oneWire_Tibbits(i).portA.sensors(j).NoResponceCount = 0
+			oneWire_Tibbits(i).portA.sensors(j).Data1 = 0
+			oneWire_Tibbits(i).portA.sensors(j).Data2 = 0
+			oneWire_Tibbits(i).portA.sensors(j).Data3 = 0
+			oneWire_Tibbits(i).portA.sensors(j).Data4 = 0
+			oneWire_Tibbits(i).portA.sensors(j).Data5 = 0
+			oneWire_Tibbits(i).portA.sensors(j).Data6 = 0
+			oneWire_Tibbits(i).portB.sensors(j).Sensor_ID = ""
+			oneWire_Tibbits(i).portB.sensors(j).Sensor_Type = OW_NONE
+			oneWire_Tibbits(i).portB.sensors(j).NoResponceCount = 0
+			oneWire_Tibbits(i).portB.sensors(j).Data1 = 0
+			oneWire_Tibbits(i).portB.sensors(j).Data2 = 0
+			oneWire_Tibbits(i).portB.sensors(j).Data3 = 0
+			oneWire_Tibbits(i).portB.sensors(j).Data4 = 0
+			oneWire_Tibbits(i).portB.sensors(j).Data5 = 0
+			oneWire_Tibbits(i).portB.sensors(j).Data6 = 0
+			oneWire_Tibbits(i).portC.sensors(j).Sensor_ID = ""
+			oneWire_Tibbits(i).portC.sensors(j).Sensor_Type = OW_NONE
+			oneWire_Tibbits(i).portC.sensors(j).NoResponceCount = 0
+			oneWire_Tibbits(i).portC.sensors(j).Data1 = 0
+			oneWire_Tibbits(i).portC.sensors(j).Data2 = 0
+			oneWire_Tibbits(i).portC.sensors(j).Data3 = 0
+			oneWire_Tibbits(i).portC.sensors(j).Data4 = 0
+			oneWire_Tibbits(i).portC.sensors(j).Data5 = 0
+			oneWire_Tibbits(i).portC.sensors(j).Data6 = 0
+			oneWire_Tibbits(i).portD.sensors(j).Sensor_ID = ""
+			oneWire_Tibbits(i).portD.sensors(j).Sensor_Type = OW_NONE
+			oneWire_Tibbits(i).portD.sensors(j).NoResponceCount = 0
+			oneWire_Tibbits(i).portD.sensors(j).Data1 = 0
+			oneWire_Tibbits(i).portD.sensors(j).Data2 = 0
+			oneWire_Tibbits(i).portD.sensors(j).Data3 = 0
+			oneWire_Tibbits(i).portD.sensors(j).Data4 = 0
+			oneWire_Tibbits(i).portD.sensors(j).Data5 = 0
+			oneWire_Tibbits(i).portD.sensors(j).Data6 = 0
+		next j
+	next i
+	
+end sub
+
+sub oneWire_Loop()
+	
+end sub

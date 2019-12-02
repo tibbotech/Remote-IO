@@ -530,8 +530,6 @@ void send_bp_sensors_list()
 	unsigned char ns, i, j;
 	string sval;
 	
-	sys.debugprint("BP list " + "= 64\r\n");
-	
 	sock_send("\"BS\":");
 	
 	sock_send("[");
@@ -545,6 +543,18 @@ void send_bp_sensors_list()
 			if (!((i == 3) && (j == 15)))
 				sock_send(",");
 		}
+	}
+	sock_send("],");
+	
+	// send FIND flags
+	sock_send("\"FIND\":");
+	
+	sock_send("[");
+	for(i = 0; i < 4; ++i) {
+		sval = str(bp_get_find(i));
+		sock_send("\""+sval+"\"");
+		if (i != 3)
+			sock_send(",");
 	}
 	sock_send("]");
 }
@@ -658,6 +668,12 @@ setting_update(string name, string value)
 		//DBG("Setting "+name+"="+value);
 		stg_set(name, 0, value);
 	}
+}
+
+void
+bp_find()
+{
+	bp_start_find();
 }
 
 string

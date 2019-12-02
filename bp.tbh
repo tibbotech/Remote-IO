@@ -48,7 +48,7 @@ end enum
 type BP_SENSOR
 	UnitID as byte
 	SensorType as BP_TYPE
-	NoResponceCount as byte
+	NoResponceCount as word
 	Data1 as word
 	Data2 as word
 	Data3 as word
@@ -78,6 +78,7 @@ end type
 type BP_PORT
 	state as BP_PORT_STATE
 	sensor as BP_PORT_SENSOR
+	findState as no_yes
 	unitIDFind as byte
 	enable as boolean
 	time as word
@@ -92,5 +93,7 @@ declare function bp_init_port(port as byte) as boolean
 declare sub bp_loop()
 declare sub bp_data_arrival(port as byte)
 
+declare sub bp_start_find()
 declare function bp_get_type(port as byte, number as byte) as BP_TYPE
 declare function bp_get_id(port as byte, number as byte) as byte
+declare function bp_get_find(port as byte) as byte

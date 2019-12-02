@@ -4,7 +4,7 @@ include "global.tbh"
 dim bp_sensors(NUM_SERIAL_PORTS, BP_SENSORS_MAX_ON_PORT) as BP_SENSOR
 dim bp_sensorsCount(NUM_SERIAL_PORTS) as byte
 dim bp_ports(NUM_SERIAL_PORTS) as BP_PORT
-dim bp_pollTime as word
+'dim bp_pollTime as word
 dim bp_setupPollingTime as byte
 
 ' declare functions and subs
@@ -24,6 +24,7 @@ declare sub bp_delete_sensor(port as byte, sensor as byte)
 declare sub bp_set_sensor_type(port as byte, unitID as byte, sensType as BP_TYPE)
 declare function bp_check_already_present(port as byte, userID as byte) as boolean
 declare sub bp_agg_send(port as byte, userID as byte, sensorType as BP_TYPE, data1 as word, data2 as word, data3 as word)
+declare sub bp_store(port as byte)
 
 #if BP_DEBUG_PRINT
 declare sub bp_debug_print(print_data as string)
@@ -63,7 +64,7 @@ sub bp_setup()
 	dim i, j as byte
 	
 	bp_setupPollingTime = val(stg_get("BO", 0))	' Get Polling Time for BProbes
-	bp_pollTime = bp_setupPollingTime
+	'bp_pollTime = bp_setupPollingTime
 	
 	for i = 0 to NUM_SERIAL_PORTS - 1
 		for j = 0 to BP_SENSORS_MAX_ON_PORT - 1
@@ -82,6 +83,7 @@ sub bp_setup()
 		bp_ports(i).sensor.state = BP_PORT_SENSOR_STATE_NONE
 		bp_ports(i).sensor.typeS = BP_UNKNOWN
 		bp_ports(i).sensor.unitID = BP_SENSORS_MODBUS_EMPTY_ID
+		bp_ports(i).findState = NO
 		bp_ports(i).unitIDFind = BP_SENSORS_MODBUS_EMPTY_ID
 		bp_ports(i).enable = false
 		bp_ports(i).time = BP_SENSORS_START_TO_FIND_DELAY
@@ -93,61 +95,56 @@ sub bp_loop()
 	
 	dim i as byte
 	
-	if bp_pollTime > 0 then
-		bp_pollTime = bp_pollTime - 1
-	end if
+	'if bp_pollTime > 0 then
+	'	bp_pollTime = bp_pollTime - 1
+	'end if
 
 	for i = 0 to NUM_SERIAL_PORTS - 1
 		if bp_ports(i).enable then
 			if bp_ports(i).time = 0 then				' Check timeout
 				select case bp_ports(i).state
 				case BP_PORT_STATE_NONE:				' NONE state. 
-					if bp_sensorsCount(i) > 0 then
+					'if bp_sensorsCount(i) > 0 then
 						bp_ports(i).state = BP_PORT_STATE_POLL
-					else
-						bp_ports(i).state = BP_PORT_STATE_FIND
-					end if
+					'else
+					'	bp_ports(i).state = BP_PORT_STATE_FIND
+					'end if
 					
 				case BP_PORT_STATE_FIND:				' Find Sensors After Start
 					select case bp_ports(i).sensor.state
-					case BP_PORT_SENSOR_STATE_NONE, BP_PORT_SENSOR_STATE_GET_REQUEST:		' Need send Find Request
+					case BP_PORT_SENSOR_STATE_NONE, BP_PORT_SENSOR_STATE_GET_REQUEST, BP_PORT_SENSOR_STATE_GET_FIND:		' Need send Find Request
 						bp_send_find_request(i)
 						
-					case BP_PORT_SENSOR_STATE_GET_FIND:
-						' Timeout Current Find Request to Sensor
-						if bp_sensorsCount(i) > 0 and bp_pollTime = 0 then
-							' Need POLL
-							bp_ports(i).state = BP_PORT_STATE_POLL
-							bp_ports(i).sensor.unitID = BP_SENSORS_MODBUS_EMPTY_ID
-							bp_ports(i).sensor.state = BP_PORT_SENSOR_STATE_NONE
-							bp_ports(i).time = 0
-						else
-							bp_ports(i).sensor.state = BP_PORT_SENSOR_STATE_NONE
-							bp_ports(i).time = 0
-						end if
-
 					end select
 
 				case BP_PORT_STATE_POLL:
-					select case bp_ports(i).sensor.state
-					case BP_PORT_SENSOR_STATE_NONE:		' Need send Poll Request
-						bp_send_poll_request(i, false)
+					if bp_ports(i).findState = NO then
 						
-					case BP_PORT_SENSOR_STATE_GET_FIND:
-						' Timeout Current Find Request to Sensor
-						bp_check_noresponces(i, bp_ports(i).sensor.unitID)
-						bp_ports(i).state = BP_PORT_STATE_POLL
-						bp_ports(i).sensor.state = BP_PORT_SENSOR_STATE_NONE
-						bp_ports(i).time = 0
-					
-					case BP_PORT_SENSOR_STATE_GET_REQUEST:
-						' Timeout Current Poll Request to Sensor
-						bp_check_noresponces(i, bp_ports(i).sensor.unitID)
-						bp_ports(i).state = BP_PORT_STATE_POLL
-						bp_ports(i).sensor.state = BP_PORT_SENSOR_STATE_NONE
-						bp_ports(i).time = 0
+						select case bp_ports(i).sensor.state
+						case BP_PORT_SENSOR_STATE_NONE:		' Need send Poll Request
+							bp_send_poll_request(i, false)
+							
+						case BP_PORT_SENSOR_STATE_GET_FIND:
+							' Timeout Current Find Request to Sensor
+							bp_check_noresponces(i, bp_ports(i).sensor.unitID)
+							bp_ports(i).state = BP_PORT_STATE_POLL
+							bp_ports(i).sensor.state = BP_PORT_SENSOR_STATE_NONE
+							bp_ports(i).time = 0
+						
+						case BP_PORT_SENSOR_STATE_GET_REQUEST:
+							' Timeout Current Poll Request to Sensor
+							bp_check_noresponces(i, bp_ports(i).sensor.unitID)
+							bp_ports(i).state = BP_PORT_STATE_POLL
+							bp_ports(i).sensor.state = BP_PORT_SENSOR_STATE_NONE
+							bp_ports(i).time = 0
 
-					end select
+						end select
+
+				else				' Need start FIND
+					bp_ports(i).state = BP_PORT_STATE_FIND
+					bp_ports(i).sensor.state = BP_PORT_SENSOR_STATE_NONE
+					bp_ports(i).time = 0
+				end if
 
 				end select
 			else
@@ -411,11 +408,12 @@ sub bp_send_poll_request(port as byte, repeate as boolean)
 
 	if repeate = false then
 		if bp_get_next_unitID_list(port, bp_ports(port).sensor.unitID, sensorType) = false then
-			bp_ports(port).state = BP_PORT_STATE_FIND
+			bp_ports(port).state = BP_PORT_STATE_POLL
 			bp_ports(port).sensor.unitID = BP_SENSORS_MODBUS_EMPTY_ID
 			bp_ports(port).sensor.state = BP_PORT_SENSOR_STATE_NONE
-			bp_ports(port).time = 0
-			bp_pollTime = bp_setupPollingTime
+			bp_ports(port).time = bp_setupPollingTime
+			'bp_pollTime = bp_setupPollingTime
+			exit sub
 		end if
 	else
 		sensorType = bp_sensors(port, bp_get_sensor(port, bp_ports(port).sensor.unitID)).SensorType
@@ -450,15 +448,48 @@ sub bp_send_poll_request(port as byte, repeate as boolean)
 	
 end sub
 
+sub bp_start_find()
+	
+	dim i as byte 
+	dim port as byte
+	port = val(get_http_argument(sock.httprqstring,"port="))
+	
+	if port >= 0 and port < NUM_SERIAL_PORTS then
+		if bp_ports(port).enable = true then
+			for i = 0 to BP_SENSORS_MAX_ON_PORT - 1
+				bp_sensors(port, i).UnitID = BP_SENSORS_MODBUS_EMPTY_ID
+				bp_sensors(port, i).SensorType = BP_UNKNOWN
+				bp_sensors(port, i).NoResponceCount = 0
+			next
+
+			bp_ports(port).findState = YES
+			bp_ports(port).unitIDFind = BP_SENSORS_MODBUS_EMPTY_ID
+			bp_sensorsCount(port) = 0
+		end if
+	end if
+	
+
+end sub
+
 sub bp_send_find_request(port as byte)
 
 	if bp_sensorsCount(port) < BP_SENSORS_MAX_ON_PORT then
 		bp_get_next_unitID(port, bp_ports(port).unitIDFind)
-		bp_ports(port).sensor.unitID = bp_ports(port).unitIDFind
-		bp_send_request(port, bp_ports(port).sensor.unitID, BP_SENSORS_MODBUS_F_READ_HOLDING_REGISTER, BP_SENSORS_FIND_REQUEST_REGISTER, BP_SENSORS_FIND_REQUEST_LENGTH)
+		if bp_ports(port).unitIDFind <> BP_SENSORS_MODBUS_EMPTY_ID then
+			bp_ports(port).sensor.unitID = bp_ports(port).unitIDFind
+			bp_send_request(port, bp_ports(port).sensor.unitID, BP_SENSORS_MODBUS_F_READ_HOLDING_REGISTER, BP_SENSORS_FIND_REQUEST_REGISTER, BP_SENSORS_FIND_REQUEST_LENGTH)
 
-		bp_ports(port).sensor.state = BP_PORT_SENSOR_STATE_GET_FIND
-		bp_ports(port).time = BP_SENSORS_FIND_REQUEST_TIMEOUT
+			bp_ports(port).sensor.state = BP_PORT_SENSOR_STATE_GET_FIND
+			bp_ports(port).time = BP_SENSORS_FIND_REQUEST_TIMEOUT
+		else		' End modbus find
+			bp_ports(port).findState = NO
+			bp_ports(port).unitIDFind = BP_SENSORS_MODBUS_EMPTY_ID
+			bp_ports(port).state = BP_PORT_STATE_POLL
+			bp_ports(port).sensor.unitID = BP_SENSORS_MODBUS_EMPTY_ID
+			bp_ports(port).sensor.state = BP_PORT_SENSOR_STATE_NONE
+			bp_ports(port).time = 0
+			bp_store(port)
+		end if
 	else
 		' Max sensors finded
 		bp_ports(port).state = BP_PORT_STATE_POLL
@@ -497,6 +528,8 @@ function bp_get_next_unitID_list(port as byte, byref unitID as byte, byref senso
 	
 	bp_get_next_unitID_list = false
 	nxt = false
+	sensorType = BP_UNKNOWN
+	'unitID = BP_SENSORS_MODBUS_EMPTY_ID
 	
 	for i = 0 to BP_SENSORS_MAX_ON_PORT - 1
 		if bp_sensors(port, i).UnitID <> BP_SENSORS_MODBUS_EMPTY_ID then
@@ -508,10 +541,10 @@ function bp_get_next_unitID_list(port as byte, byref unitID as byte, byref senso
 			else
 				if unitID = bp_sensors(port, i).UnitID then
 					nxt = true
-					if bp_sensors(port, i).SensorType = BP_UNKNOWN and bp_sensors(port, i).NoResponceCount >= BP_SENSORS_POLL_MAX_NORESPONCES then		' Need delete this row
-						bp_sensors(port, i).UnitID = BP_SENSORS_MODBUS_EMPTY_ID
-						bp_sensors(port, i).NoResponceCount = 0
-					end if
+					'if bp_sensors(port, i).SensorType = BP_UNKNOWN and bp_sensors(port, i).NoResponceCount >= BP_SENSORS_POLL_MAX_NORESPONCES then		' Need delete this row
+					'	bp_sensors(port, i).UnitID = BP_SENSORS_MODBUS_EMPTY_ID
+					'	bp_sensors(port, i).NoResponceCount = 0
+					'end if
 				else
 					if nxt then
 						unitID = bp_sensors(port, i).UnitID
@@ -528,17 +561,15 @@ end function
 
 sub bp_get_next_unitID(port as byte, byref unitID as byte)
 	
-	do
-		if unitID < BP_SENSORS_MODBUS_MIN_ID then
-			unitID = BP_SENSORS_MODBUS_MIN_ID
+	if unitID < BP_SENSORS_MODBUS_MIN_ID then
+		unitID = BP_SENSORS_MODBUS_MIN_ID
+	else
+		if unitID < BP_SENSORS_MODBUS_MAX_ID then
+			unitID = unitID + 1
 		else
-			if unitID < BP_SENSORS_MODBUS_MAX_ID then
-				unitID = unitID + 1
-			else
-				unitID = BP_SENSORS_MODBUS_MIN_ID
-			end if
+			unitID = BP_SENSORS_MODBUS_EMPTY_ID
 		end if
-	loop until bp_check_already_present(port, unitID) = false
+	end if
 
 end sub
 
@@ -555,6 +586,17 @@ function bp_modbus_check_crc(packet as string) as boolean
 	end if
 	
 end function
+
+sub bp_store(port as byte)
+
+	dim i as byte
+	
+	for i = 0 to BP_SENSORS_MAX_ON_PORT - 1
+		' Store Sensor to EEPROM
+		stg_set("BS", port * BP_SENSORS_MAX_ON_PORT + i, str(bp_sensors(port, i).UnitID))
+	next i
+
+end sub
 
 sub bp_add_sensor(port as byte, userID as byte, sensType as byte)
 	
@@ -578,9 +620,6 @@ sub bp_add_sensor(port as byte, userID as byte, sensType as byte)
 					bp_sensors(port, i).Data5 = 0
 					bp_sensors(port, i).Data6 = 0
 					bp_sensorsCount(port) = bp_sensorsCount(port) + 1
-					
-					' Store Sensor to EEPROM
-					stg_set("BS", port * BP_SENSORS_MAX_ON_PORT + i, str(userID))
 					
 					#if BP_DEBUG_PRINT
 						bp_debug_print("New BP UserID:" + str(bp_sensors(port, i).UnitID) + ", type:" + str(bp_sensors(port, i).SensorType) + ", to row:" + str(i))
@@ -694,6 +733,18 @@ function bp_get_id(port as byte, number as byte) as byte
 			bp_get_id = bp_sensors(port, number).UnitID
 	
 		end if
+	end if
+	
+end function
+
+function bp_get_find(port as byte) as byte
+
+	if port < 0 or port > NUM_SERIAL_PORTS then 
+		bp_get_find = BP_UNKNOWN
+	else
+		
+		bp_get_find = bp_ports(port).findState
+	
 	end if
 	
 end function

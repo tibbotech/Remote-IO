@@ -758,7 +758,7 @@ function get_TibbitType(tibbit as string(4)) as en_slot_type
 	case "03_1"
 		get_TibbitType = SLOT_OD_2
 
-	case "03-2"
+	case "03_2"
 		get_TibbitType = SLOT_OD_2
 
 	case "04_1"

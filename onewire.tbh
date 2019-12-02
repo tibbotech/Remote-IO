@@ -1,0 +1,39 @@
+
+#define ONEWIRE_SENSORS_PER_CHANNEL	8
+
+#if PLATFORM_ID = TPP3WG2
+	#define ONEWIRE_SLOTS	11
+#elif PLATFORM_ID = TPP2WG2
+	#define ONEWIRE_SLOTS	6
+#endif
+
+enum ONEWIRE_TYPE
+	OW_NONE,
+	OW_UNKNOWN,
+	OW_TEMP,
+	OW_HUM
+end enum
+
+type ONEWIRE_SENSOR
+	Sensor_ID as string(8)
+	Sensor_Type as ONEWIRE_TYPE
+	NoResponceCount as word
+	Data1 as word
+	Data2 as word
+	Data3 as word
+	Data4 as word
+	Data5 as word
+	Data6 as word
+end type
+
+type ONEWIRE_PORT
+	sensors(ONEWIRE_SENSORS_PER_CHANNEL) as ONEWIRE_SENSOR
+end type
+
+type ONEWIRE_TIBBIT
+	portA as ONEWIRE_PORT
+	portB as ONEWIRE_PORT
+	portC as ONEWIRE_PORT
+	portD as ONEWIRE_PORT
+end type
+
