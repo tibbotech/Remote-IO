@@ -7,4 +7,4 @@ Remote IO Controllers run a dedicated open-source firmware application. This app
 
 Tibbo Remote IO solution targets SCADA, as well as distributed control and data collection applications.
 
-https://tibbo.com/remote-io.html
+See the [Tibbo Remote-IO](https://tibbo.com/remote-io.html) page.
