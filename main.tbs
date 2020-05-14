@@ -88,6 +88,7 @@ sub on_sys_timer()
 	
 	digital_loop()
 	bp_loop()
+	oneWire_Loop()
 
 	if analog_period_counter >= analog_period then
 
@@ -487,11 +488,29 @@ initialize:		'OK, initialize now!
 end sub
 #endif
 
+function agg_set_data(data as string) as boolean
+
+	dim timeOut as word
+
+	agg_set_data = false
+	
+	if agg_sock <> 255 then
+		sock.num = agg_sock
+		if sock.statesimple = PL_SSTS_EST then
+			timeOut = sys.timercount
+			while sock.txfree < len(data) and sock.statesimple = PL_SSTS_EST
+				if sys.timercount - timeOut > AGG_SEND_WAIT_TIME then exit function
+			wend
+			sock.setdata(data)
+			agg_set_data = true
+		end if
+	end if
+
+end function
+
 '------------------------------------------------------------------------------
 sub on_ser_data_arrival()
-	dim s as string
 	dim param as string
-	dim hex_s as string
 	dim i as byte
 	
 	if bp_ports(ser.num).enable then
@@ -506,16 +525,91 @@ sub on_ser_data_arrival()
 		end if
 	#endif
 
-	s=""
-	agg_record_encode(s,str(ser.num)) 
-	param = ser.getdata(255)
-	agg_record_encode(s,param)
-	hex_s = ""
-	for i = 1 to len(param)
-		hex_s = hex_s + hex(asc(mid(param, i, 1))) + " "
-	next i
-	agg_record_encode(s,hex_s)
-	agg_fire_instant_event("","ser",s,2)
+	const AGG_COMMAND_START = &h02
+	const AGG_COMMAND_END = &h0d
+	const AGG_COMMAND_PARAMETERS_SEPARATOR = &h17
+	const AGG_ELEMENT_START = &h1c
+	const AGG_ELEMENT_END = &h1d
+	const AGG_ELEMENT_NAME_VALUE_SEPARATOR = &h1e
+	const BUFFER_AGG_SEND_SIZE = 479
+	const AGG_EVENT_HEADER_SIZE = 22
+	const STRING_LENGTH_HEX = 127
+
+	if agg_sock <> 255 then
+		sock.num = agg_sock
+		if sock.statesimple = PL_SSTS_EST then
+			if ser.rxlen > 0 then
+				' Send event to AGG
+				dim event_data as string
+				dim hex_b as string(2)
+				dim lenDataForSend as word
+				dim lenSerData as word
+				dim lenDataForOperate as word
+
+				event_data = chr(AGG_COMMAND_START) + "M" + chr(AGG_COMMAND_PARAMETERS_SEPARATOR) + chr(AGG_COMMAND_PARAMETERS_SEPARATOR)
+							+ "E" + chr(AGG_COMMAND_PARAMETERS_SEPARATOR) + chr(AGG_COMMAND_PARAMETERS_SEPARATOR) + "ser" + chr(AGG_COMMAND_PARAMETERS_SEPARATOR)
+							+ "2" + chr(AGG_COMMAND_PARAMETERS_SEPARATOR) + chr(AGG_COMMAND_PARAMETERS_SEPARATOR) + chr(AGG_COMMAND_PARAMETERS_SEPARATOR) 
+							+ chr(AGG_ELEMENT_START) + "R" +chr(AGG_ELEMENT_NAME_VALUE_SEPARATOR)
+							+ chr(AGG_ELEMENT_START) + str(ser.num) + chr(AGG_ELEMENT_END)
+							+ chr(AGG_ELEMENT_START)
+				if agg_set_data(event_data) = true then
+					
+					lenDataForSend = AGG_EVENT_HEADER_SIZE
+					lenSerData = ser.rxlen
+					
+					while lenSerData > 0
+						if lenSerData < (BUFFER_AGG_SEND_SIZE - lenDataForSend) / 2  then
+							' Serial Data
+							lenDataForOperate = lenSerData
+						else
+							' AGG Buffer
+							lenDataForOperate = (BUFFER_AGG_SEND_SIZE - lenDataForSend) / 2
+						end if
+						if STRING_LENGTH_HEX < lenDataForOperate then
+							' String HEX
+							lenDataForOperate = STRING_LENGTH_HEX
+						end if
+
+						param = ser.getdata(lenDataForOperate)
+						lenSerData = lenSerData - lenDataForOperate
+						
+						event_data = ""
+						for i = 1 to len(param)
+							hex_b = mid(hex(asc(mid(param, i, 1))), 3, 2)
+							if len(hex_b) = 1 then
+								event_data = event_data + "0" + hex_b
+							else
+								event_data = event_data + hex_b
+							end if
+						next i
+
+						if agg_set_data(event_data) = false then
+							sock.txclear
+							exit sub
+						end if
+						
+						lenDataForSend = lenDataForSend + len(event_data)
+						
+						if lenDataForSend = BUFFER_AGG_SEND_SIZE or lenDataForSend = BUFFER_AGG_SEND_SIZE - 1 then
+							' Need send AGG buffer
+							sock.send()
+							lenDataForSend = 0
+						end if
+					wend
+					
+					event_data = chr(AGG_ELEMENT_END)
+								+ chr(AGG_ELEMENT_END)
+								+ chr(AGG_COMMAND_END)
+					sock.setdata(event_data)
+					sock.send()
+				end if
+			end if
+		else
+			ser.rxclear()
+		end if
+	else
+		ser.rxclear()
+	end if
 
 end sub
 

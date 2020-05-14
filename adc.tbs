@@ -552,13 +552,15 @@ sub analog_loop()
 		case SLOT_IA_RTD:
 			dim fault_detect, fault_status as byte
 
-			analog_22_read(slot, analog_float_values(slot * 4 + 0), analog_values(slot * 4 + 0), fault_detect, fault_status)
-			snmp_trap_check_analog(slot * 4 + 0, true)
-			analog_agg_send(slot, 0)
-			
-			#if DEV_DEBUG_PRINT
-				dev_debugprint("#22 slot: " + str(slot) + ", Temp value :" + ftostr(analog_float_values(slot * 4 + 0), FTOSTR_MODE_AUTO, 5))
-			#endif
+			if param_io(slot * 4 + 0).io_enabled = YES then
+				analog_22_read(slot, analog_float_values(slot * 4 + 0), analog_values(slot * 4 + 0), fault_detect, fault_status)
+				snmp_trap_check_analog(slot * 4 + 0, true)
+				analog_agg_send(slot, 0)
+				
+				#if DEV_DEBUG_PRINT
+					dev_debugprint("#22 slot: " + str(slot) + ", Temp value :" + ftostr(analog_float_values(slot * 4 + 0), FTOSTR_MODE_AUTO, 5))
+				#endif
+			end if
 			
 		case SLOT_IA_52:
 			if param_io(slot * 4 + 0).io_enabled = YES then
@@ -598,14 +600,16 @@ sub analog_loop()
 			end if
 
 		case SLOT_IA_53:
-			analog_float_values(slot * 4 + 0) = analog_53_read(slot, analog_values(slot * 4 + 0))
-			snmp_trap_check_analog(slot * 4 + 0, true)
-			analog_agg_send(slot, 0)
-		
-			#if DEV_DEBUG_PRINT
-				dev_debugprint("#53 slot: " + str(slot) + ", value:" + ftostr(analog_float_values(slot * 4 + 0), FTOSTR_MODE_AUTO, 5))
-			#endif
-
+			if param_io(slot * 4 + 0).io_enabled = YES then
+				analog_float_values(slot * 4 + 0) = analog_53_read(slot, analog_values(slot * 4 + 0))
+				snmp_trap_check_analog(slot * 4 + 0, true)
+				analog_agg_send(slot, 0)
+			
+				#if DEV_DEBUG_PRINT
+					dev_debugprint("#53 slot: " + str(slot) + ", value:" + ftostr(analog_float_values(slot * 4 + 0), FTOSTR_MODE_AUTO, 5))
+				#endif
+			end if
+			
 		case SLOT_OA_4:					' #14
 			if param_io(slot * 4 + 0).io_enabled = YES then
 				if analog_values(slot * 4 + 0) <> analog_last_values(slot * 4 + 0) then
@@ -658,9 +662,11 @@ sub analog_loop()
 			end if
 			
 		case SLOT_DP:						' #40x
-			if analog_values(slot * 4 + 0) <> analog_last_values(slot * 4 + 0) then
-				analog_40_set(slot, analog_values(slot * 4 + 0))
-				analog_last_values(slot * 4 + 0) = analog_values(slot * 4 + 0)
+			if param_io(slot * 4 + 0).io_enabled = YES then
+				if analog_values(slot * 4 + 0) <> analog_last_values(slot * 4 + 0) then
+					analog_40_set(slot, analog_values(slot * 4 + 0))
+					analog_last_values(slot * 4 + 0) = analog_values(slot * 4 + 0)
+				end if
 			end if
 
 		end select
@@ -728,6 +734,13 @@ function analog_set(channel as word, value as word, pwm_select as boolean) as bo
 					analog_set = false
 				end if
 
+			case SLOT_8BIT:
+				if param_io(channel).io_enabled = 1 then	' OUTPUT
+					' TBT41_ADDR_GPIO
+					io_tbt41_set_data(slot, value)
+					analog_values(channel) = value
+				end if
+			
 			case else:
 				analog_set = false
 				
@@ -863,7 +876,7 @@ end sub
 
 sub analog_ssi_init()
 
-	ssi.channel = 0								' #13, #14
+	ssi.channel = 0								' #13, #14, #31(OW)
 	ssi.enabled = NO
 	ssi.baudrate = 1
 	ssi.zmode = PL_SSI_ZMODE_ENABLED_ON_ZERO
@@ -956,20 +969,16 @@ end sub
 
 sub analog_i2c_write(data as byte)
 	
-	dim bitCnt as byte						'Bits counter	
-	dim compval as byte						'Value to compare - MASK
-	dim BitData as boolean					'Comparison result (1 or 0)
-
 	ssi.str(chr(data),PL_SSI_ACK_RX)
 
 end sub
 
 function analog_i2c_read(acknak_request as boolean) as byte
 
-	dim bitCnt as byte						'Bit counter
-	dim compval as byte						'Value to compare - MASK
+	dim tmp as word
 
-	dim tmp as word=0
+	tmp = 0
+	
 	if acknak_request = true then
 		tmp = ssi.value(&hFFFE, 9) / 2
 	else
@@ -1215,9 +1224,11 @@ function analog_pic_init(slot as byte) as boolean
 		analog_pwm_period(slot * 4 + 0) = val(stg_get("FV", slot * 4 + 0))
 		analog_pwm_prescaler(slot * 4 + 0) = val(stg_get("GV", slot * 4 + 0))
 		analog_pwm_enable(slot * 4 + 0) = val(stg_get("HV", slot * 4 + 0))
+		param_io(slot * 4 + 0).io_state = LOW
 		analog_pic_pwm_config(slot, PIC_PWM0, analog_pwm_pulse(slot * 4 + 0), analog_pwm_period(slot * 4 + 0), analog_pwm_prescaler(slot * 4 + 0))
 		if analog_pwm_enable(slot * 4 + 0) = true then
 			analog_pic_pwm_start(slot, 0) 
+			param_io(slot * 4 + 0).io_state = HIGH
 		end if
 	end if
 	if param_io(slot * 4 + 1).io_enabled = true then
@@ -1225,9 +1236,11 @@ function analog_pic_init(slot as byte) as boolean
 		analog_pwm_period(slot * 4 + 1) = val(stg_get("FV", slot * 4 + 1))
 		analog_pwm_prescaler(slot * 4 + 1) = val(stg_get("GV", slot * 4 + 1))
 		analog_pwm_enable(slot * 4 + 1) = val(stg_get("HV", slot * 4 + 1))
+		param_io(slot * 4 + 1).io_state = LOW
 		analog_pic_pwm_config(slot, PIC_PWM1, analog_pwm_pulse(slot * 4 + 1), analog_pwm_period(slot * 4 + 1), analog_pwm_prescaler(slot * 4 + 1))
 		if analog_pwm_enable(slot * 4 + 1) = true then
 			analog_pic_pwm_start(slot, 1)
+			param_io(slot * 4 + 1).io_state = HIGH
 		end if
 	end if
 	if param_io(slot * 4 + 2).io_enabled = true then
@@ -1235,9 +1248,11 @@ function analog_pic_init(slot as byte) as boolean
 		analog_pwm_period(slot * 4 + 2) = val(stg_get("FV", slot * 4 + 2))
 		analog_pwm_prescaler(slot * 4 + 2) = val(stg_get("GV", slot * 4 + 2))
 		analog_pwm_enable(slot * 4 + 2) = val(stg_get("HV", slot * 4 + 2))
+		param_io(slot * 4 + 2).io_state = LOW
 		analog_pic_pwm_config(slot, PIC_PWM2, analog_pwm_pulse(slot * 4 + 2), analog_pwm_period(slot * 4 + 2), analog_pwm_prescaler(slot * 4 + 2))
 		if analog_pwm_enable(slot * 4 + 2) = true then
 			analog_pic_pwm_start(slot, 2)
+			param_io(slot * 4 + 2).io_state = HIGH
 		end if
 	end if
 	
@@ -1432,9 +1447,11 @@ function analog_pwm_onoff(channel as byte, en as boolean) as boolean
 			analog_pwm_onoff = true
 			if en then
 				analog_pwm_enable(channel) = true
+				param_io(channel).io_state = HIGH
 				analog_pic_pwm_start(slot, pin)
 			else
 				analog_pwm_enable(channel) = false
+				param_io(channel).io_state = LOW
 				analog_pic_pwm_stop(slot, pin)
 			end if
 		end if

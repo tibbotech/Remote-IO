@@ -6,58 +6,759 @@ include "global.tbh"
 	#define ONEWIRE_SLOTS	6
 #endif
 
-dim oneWire_Tibbits(ONEWIRE_SLOTS) as ONEWIRE_TIBBIT
+#define OW_RST_PIN 2
+#define OW_BUSY_PIN 3
+#define OW_SSI_NUM 0
+#define OW_SSI_BAUDRATE 200
+
+#define OW_REGISTER_COMMAND_ADDRESS 128
+#define OW_REGISTER_DATA_ADDRESS	129
+
+#define OW_CMD_SELECTCHANNEL		128
+#define OW_CMD_RESET				144
+#define OW_CMD_SEARCHFIRST			160
+#define OW_CMD_SEARCHNEXT			161
+#define OW_CMD_READ_DATA			176
+#define OW_CMD_SEND_DATA			192
+#define OW_CMD_SEND_DATA_WITH_BUSY	208
+#define OW_CMD_GETVERSION			240
+
+#define OW_PORT_A					0
+#define OW_PORT_B					1
+#define OW_PORT_C					2
+#define OW_PORT_D					3
+
+#define OW_CMD_MATCH_ROM			&h55
+#define OW_CMD_TEMPERATURE_MEAS		&h44
+#define OW_CMD_READSCRATCHPAD		&hbe
+
+dim oneWire_Tibbits(ONEWIRE_TIBBITS) as ONEWIRE_TIBBIT
 dim oneWire_setupPollingTime as byte
+
+declare sub ow_operate_port(byref tibbit as ONEWIRE_TIBBIT, byref port as ONEWIRE_PORT, i as byte, portn as byte)
+declare function ow_checkTibbit(slot as byte) as boolean
+declare function ow_send_string(data as string) as boolean
+declare function ow_send_command(command as byte, ow_index as byte, slot as byte, port as byte) as boolean
+declare function ow_send_data(command as byte, rom as string(8), data as string(16), ow_index as byte, slot as byte, port as byte) as boolean
+declare function ow_read_data(byref data as string, slot as byte, data_len as byte) as boolean
+declare function ow_checkBUSY(slot as byte) as boolean
+declare function ow_get_id_stored(tibbit_n as byte, port as byte, sensor_n as byte) as string(8)
+
+#if OW_DEBUG_PRINT
+sub ow_debug_print(print_data as string)
+	sys.debugprint("OW> " + print_data + CR_LF)
+end sub
+#endif
 
 sub oneWire_Init()
 
 	dim i, j as byte
 	
-	oneWire_setupPollingTime = val(stg_get("WO", 0))	' Get Polling Time for OneWire
-	
-	for i = 0 to ONEWIRE_SLOTS - 1
-		for j = 0 to BP_SENSORS_MAX_ON_PORT - 1
-			oneWire_Tibbits(i).portA.sensors(j).Sensor_ID = ""
-			oneWire_Tibbits(i).portA.sensors(j).Sensor_Type = OW_NONE
+	'oneWire_setupPollingTime = val(stg_get("WO", 0))	' Get Polling Time for OneWire
+
+	for i = 0 to ONEWIRE_TIBBITS - 1
+		oneWire_Tibbits(i).active = false
+		oneWire_Tibbits(i).slot = 255
+		oneWire_Tibbits(i).busy = false
+		oneWire_Tibbits(i).curr_channel = 255
+		oneWire_Tibbits(i).portA.need_find = false
+		oneWire_Tibbits(i).portA.status = OW_PS_NONE
+		oneWire_Tibbits(i).portA.ssi_status = OW_SSI_NONE
+		oneWire_Tibbits(i).portA.sensors_counter = 0
+		oneWire_Tibbits(i).portB.need_find = false
+		oneWire_Tibbits(i).portB.status = OW_PS_NONE
+		oneWire_Tibbits(i).portB.ssi_status = OW_SSI_NONE
+		oneWire_Tibbits(i).portB.sensors_counter = 0
+		oneWire_Tibbits(i).portC.need_find = false
+		oneWire_Tibbits(i).portC.status = OW_PS_NONE
+		oneWire_Tibbits(i).portC.ssi_status = OW_SSI_NONE
+		oneWire_Tibbits(i).portC.sensors_counter = 0
+		oneWire_Tibbits(i).portD.need_find = false
+		oneWire_Tibbits(i).portD.status = OW_PS_NONE
+		oneWire_Tibbits(i).portD.ssi_status = OW_SSI_NONE
+		oneWire_Tibbits(i).portD.sensors_counter = 0
+
+		for j = 0 to ONEWIRE_SENSORS_PER_PORT - 1
+			oneWire_Tibbits(i).portA.sensors(j).Sensor_ID = ow_get_id_stored(i, OW_PORT_A, j)
+			if oneWire_Tibbits(i).portA.sensors(j).Sensor_ID <> (chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0)) and 
+			   oneWire_Tibbits(i).portA.sensors(j).Sensor_ID <> "" then
+				oneWire_Tibbits(i).portA.sensors_counter = oneWire_Tibbits(i).portA.sensors_counter + 1
+			end if
 			oneWire_Tibbits(i).portA.sensors(j).NoResponceCount = 0
 			oneWire_Tibbits(i).portA.sensors(j).Data1 = 0
 			oneWire_Tibbits(i).portA.sensors(j).Data2 = 0
-			oneWire_Tibbits(i).portA.sensors(j).Data3 = 0
-			oneWire_Tibbits(i).portA.sensors(j).Data4 = 0
-			oneWire_Tibbits(i).portA.sensors(j).Data5 = 0
-			oneWire_Tibbits(i).portA.sensors(j).Data6 = 0
-			oneWire_Tibbits(i).portB.sensors(j).Sensor_ID = ""
-			oneWire_Tibbits(i).portB.sensors(j).Sensor_Type = OW_NONE
+			
+			oneWire_Tibbits(i).portB.sensors(j).Sensor_ID = ow_get_id_stored(i, OW_PORT_B, j)
+			if oneWire_Tibbits(i).portB.sensors(j).Sensor_ID <> (chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0)) and 
+			   oneWire_Tibbits(i).portB.sensors(j).Sensor_ID <> "" then
+				oneWire_Tibbits(i).portB.sensors_counter = oneWire_Tibbits(i).portB.sensors_counter + 1
+			end if
 			oneWire_Tibbits(i).portB.sensors(j).NoResponceCount = 0
 			oneWire_Tibbits(i).portB.sensors(j).Data1 = 0
 			oneWire_Tibbits(i).portB.sensors(j).Data2 = 0
-			oneWire_Tibbits(i).portB.sensors(j).Data3 = 0
-			oneWire_Tibbits(i).portB.sensors(j).Data4 = 0
-			oneWire_Tibbits(i).portB.sensors(j).Data5 = 0
-			oneWire_Tibbits(i).portB.sensors(j).Data6 = 0
-			oneWire_Tibbits(i).portC.sensors(j).Sensor_ID = ""
-			oneWire_Tibbits(i).portC.sensors(j).Sensor_Type = OW_NONE
+			
+			oneWire_Tibbits(i).portC.sensors(j).Sensor_ID = ow_get_id_stored(i, OW_PORT_C, j)
+			if oneWire_Tibbits(i).portC.sensors(j).Sensor_ID <> (chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0)) and 
+			   oneWire_Tibbits(i).portC.sensors(j).Sensor_ID <> "" then
+				oneWire_Tibbits(i).portC.sensors_counter = oneWire_Tibbits(i).portC.sensors_counter + 1
+			end if
 			oneWire_Tibbits(i).portC.sensors(j).NoResponceCount = 0
 			oneWire_Tibbits(i).portC.sensors(j).Data1 = 0
 			oneWire_Tibbits(i).portC.sensors(j).Data2 = 0
-			oneWire_Tibbits(i).portC.sensors(j).Data3 = 0
-			oneWire_Tibbits(i).portC.sensors(j).Data4 = 0
-			oneWire_Tibbits(i).portC.sensors(j).Data5 = 0
-			oneWire_Tibbits(i).portC.sensors(j).Data6 = 0
-			oneWire_Tibbits(i).portD.sensors(j).Sensor_ID = ""
-			oneWire_Tibbits(i).portD.sensors(j).Sensor_Type = OW_NONE
+			
+			oneWire_Tibbits(i).portD.sensors(j).Sensor_ID = ow_get_id_stored(i, OW_PORT_D, j)
+			if oneWire_Tibbits(i).portD.sensors(j).Sensor_ID <> (chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0)) and 
+			   oneWire_Tibbits(i).portD.sensors(j).Sensor_ID <> "" then
+				oneWire_Tibbits(i).portD.sensors_counter = oneWire_Tibbits(i).portD.sensors_counter + 1
+			end if
 			oneWire_Tibbits(i).portD.sensors(j).NoResponceCount = 0
 			oneWire_Tibbits(i).portD.sensors(j).Data1 = 0
 			oneWire_Tibbits(i).portD.sensors(j).Data2 = 0
-			oneWire_Tibbits(i).portD.sensors(j).Data3 = 0
-			oneWire_Tibbits(i).portD.sensors(j).Data4 = 0
-			oneWire_Tibbits(i).portD.sensors(j).Data5 = 0
-			oneWire_Tibbits(i).portD.sensors(j).Data6 = 0
 		next j
 	next i
+	
+	' Check Tibbit OW presents
+	j = 0
+	for i = 0 to NUM_OF_SLOTS - 1
+		' For TESTING ONLY
+		'if i = 4 or i = 5 then
+		if param_st(i) = SLOT_OW then
+			if j < ONEWIRE_TIBBITS then
+				' Check Tibbit OW presens
+				oneWire_Tibbits(j).slot = i
+				if ow_checkTibbit(i) then
+					oneWire_Tibbits(j).active = true
+				end if
+				j = j + 1
+			end if
+		end if
+	next i
+
 	
 end sub
 
 sub oneWire_Loop()
+
+	dim i, j as byte
+	
+	for i = 0 to ONEWIRE_TIBBITS - 1
+	
+		if oneWire_Tibbits(i).active = true then
+			' PORT A
+			ow_operate_port(oneWire_Tibbits(i), oneWire_Tibbits(i).portA, i, OW_PORT_A)
+			
+			' PORT B
+			ow_operate_port(oneWire_Tibbits(i), oneWire_Tibbits(i).portB, i, OW_PORT_B)
+			
+			' PORT C
+			ow_operate_port(oneWire_Tibbits(i), oneWire_Tibbits(i).portC, i, OW_PORT_C)
+			
+			' PORT D
+			ow_operate_port(oneWire_Tibbits(i), oneWire_Tibbits(i).portD, i, OW_PORT_D)
+		end if
+		
+	next i
 	
 end sub
+
+sub ow_start_find()
+	
+	dim i as byte 
+	dim slot as byte
+	dim port as byte
+	slot = val(get_http_argument(sock.httprqstring,"slot=")) / 2
+	port = val(get_http_argument(sock.httprqstring,"port="))
+	
+	if slot >= 0 and slot < NUM_OF_SLOTS then
+		if port >= 0 and port < 4 then
+			for i = 0 to ONEWIRE_TIBBITS - 1
+				if oneWire_Tibbits(i).slot = slot then
+					if oneWire_Tibbits(i).active = true then
+						select case port 
+						case 0:
+							oneWire_Tibbits(i).portA.need_find = true
+							
+						case 1:
+							oneWire_Tibbits(i).portB.need_find = true
+							
+						case 2:
+							oneWire_Tibbits(i).portC.need_find = true
+							
+						case 3:
+							oneWire_Tibbits(i).portD.need_find = true
+							
+						end select
+					end if
+				end if
+			next i
+		end if
+	end if
+
+end sub
+
+function ow_get_setting_name(i as byte, port as byte) as string(2)
+	
+	ow_get_setting_name = ""
+	
+	if i < ONEWIRE_TIBBITS and port < 4 then
+		if i = 0 and port = 0 then
+			ow_get_setting_name = "O1"
+		else if i = 0 and port = 1 then
+			ow_get_setting_name = "O2"
+		else if i = 0 and port = 2 then
+			ow_get_setting_name = "O3"
+		else if i = 0 and port = 3 then
+			ow_get_setting_name = "O4"
+		else if i = 1 and port = 0 then
+			ow_get_setting_name = "O5"
+		else if i = 1 and port = 1 then
+			ow_get_setting_name = "O6"
+		else if i = 1 and port = 2 then
+			ow_get_setting_name = "O7"
+		else if i = 1 and port = 3 then
+			ow_get_setting_name = "O8"
+		end if
+	end if
+
+end function
+
+sub ow_delete_sensors(i as byte, port_n as byte, byref port as ONEWIRE_PORT)
+
+	dim sett as string(2)
+	
+	sett = ow_get_setting_name(i, port_n)
+
+	port.sensors_counter = 0
+	port.sensor_current = 0
+
+	if sett <> "" then
+		dim i as byte
+		
+		for i = 0 to ONEWIRE_SENSORS_PER_PORT - 1
+			stg_set(sett, i, chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0))
+			port.sensors(i).Sensor_ID = (chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0))
+		next i
+	end if
+	
+end sub
+
+sub ow_store_sensor(i as byte, port as byte, sensor_n as byte, sensor as string(8))
+	
+	dim sett as string(2)
+	
+	sett = ow_get_setting_name(i, port)
+
+	if sett <> "" then
+		if sensor_n < ONEWIRE_SENSORS_PER_PORT then
+			stg_set(sett, sensor_n, sensor)
+		end if
+	end if
+	
+end sub
+
+sub ow_operate_port(byref tibbit as ONEWIRE_TIBBIT, byref port as ONEWIRE_PORT, i as byte, portn as byte)
+	
+	if tibbit.slot <> 255 then
+		select case port.status
+		case OW_PS_NONE:
+			port.status = OW_PS_WAIT
+			
+		case OW_PS_WAIT:
+			'Initiate read data from sensors or find sensors
+			if tibbit.busy = false then
+				if port.need_find = true then
+					' need find
+					' Delete all sensors on port
+					ow_delete_sensors(i, portn, port)
+					
+					port.status = OW_PS_FIND
+					tibbit.busy = true
+				else
+					if port.sensors_counter > 0 then
+						port.sensor_current = 0
+						port.status = OW_PS_READ
+						port.ssi_status = OW_SSI_NONE
+						tibbit.busy = true
+					end if
+				end if
+			end if
+			
+		case OW_PS_FIND:
+			select case port.ssi_status
+			case OW_SSI_NONE:
+				'if tibbit.busy = false then 
+					' Need send FindFirst command
+					if ow_send_command(OW_CMD_SEARCHFIRST, i, tibbit.slot, portn) then
+						tibbit.busy = true
+						port.ssi_status = OW_SSI_FINDFIRST
+					end if
+				'end if
+
+			case OW_SSI_FINDFIRST:
+				' Check BUSY pin
+				if ow_checkBusy(tibbit.slot) then
+					' Tibbit Ready to Go
+					' Get ID from Find command
+					if not ow_read_data(port.sensors(port.sensors_counter).Sensor_ID, tibbit.slot, 8) then
+						' error
+						port.ssi_status = OW_SSI_NONE
+						tibbit.busy = false
+						#if OW_DEBUG_PRINT
+							ow_debug_print("Error read data Find on Port " + str(portn))
+						#endif
+					else
+						if (port.sensors(port.sensors_counter).Sensor_ID = (chr(255) + chr(255) + chr(255) + chr(255) + chr(255) + chr(255) + chr(255) + chr(255))) then
+							' Not found
+							port.sensors(port.sensors_counter).Sensor_ID = (chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0))
+							port.need_find = false
+							port.status = OW_PS_WAIT
+							port.ssi_status = OW_SSI_NONE
+							tibbit.busy = false
+							#if OW_DEBUG_PRINT
+								ow_debug_print("End search on Port " + str(portn))
+							#endif
+						else
+							' Found sensor
+							' Check type of sensor
+							dim sType as byte
+							sType = asc(port.sensors(port.sensors_counter).Sensor_ID)
+							if sType = OW_SENSOR_TYPE_TEMPERATURE then	' 0x28 - temp sensor
+								' Stored sensors
+								ow_store_sensor(i, portn, port.sensors_counter, port.sensors(port.sensors_counter).Sensor_ID)
+								
+								port.sensors_counter = port.sensors_counter + 1
+								if port.sensors_counter < ONEWIRE_SENSORS_PER_PORT then
+									port.ssi_status = OW_SSI_FINDNEXT
+								else
+									port.status = OW_PS_WAIT
+									port.ssi_status = OW_SSI_NONE
+								end if
+								#if OW_DEBUG_PRINT
+									ow_debug_print("Sensor found on Port " + str(portn) + ": " + port.sensors(port.sensors_counter - 1).Sensor_ID)
+								#endif
+							else
+								' Unknown type of sensor. Skip...
+								port.sensors(port.sensors_counter).Sensor_ID = (chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0))
+								#if OW_DEBUG_PRINT
+									ow_debug_print("Sensor found on Port is unknown type. Skip...")
+								#endif
+							end if
+						end if
+					end if
+				end if
+				
+			case OW_SSI_FINDNEXT:
+				'if tibbit.busy = false then
+					' Need send FindNext command
+					if ow_send_command(OW_CMD_SEARCHNEXT, i, tibbit.slot, portn) then
+						tibbit.busy = true
+						port.ssi_status = OW_SSI_FINDFIRST
+					end if
+				'end if
+				
+			end select
+			
+		case OW_PS_READ:
+			select case port.ssi_status
+			case OW_SSI_NONE:
+				' Send Measure command with BUSY
+				if ow_send_data(OW_CMD_SEND_DATA_WITH_BUSY, port.sensors(port.sensor_current).Sensor_ID, chr(OW_CMD_TEMPERATURE_MEAS), i, tibbit.slot, portn) then
+					' Waiting for measurement to complete
+					port.ssi_status = OW_SSI_MEASURE
+				end if
+				
+			case OW_SSI_MEASURE:
+				if ow_checkBUSY(tibbit.slot) then
+					' Send Measure command with BUSY
+					if ow_send_data(OW_CMD_SEND_DATA, port.sensors(port.sensor_current).Sensor_ID, chr(OW_CMD_READSCRATCHPAD), i, tibbit.slot, portn) then
+						' Waiting for read data
+						port.ssi_status = OW_SSI_WAITDATA
+						tibbit.busy = true
+					end if
+				end if
+				
+			case OW_SSI_WAITDATA:
+				if ow_checkBUSY(tibbit.slot) then
+					' ready to send Read command to Sensor
+					if ow_send_command(OW_CMD_READ_DATA + 8, i, tibbit.slot, portn) then
+						tibbit.busy = true
+						port.ssi_status = OW_SSI_READDATA
+					end if
+				end if
+				
+			case OW_SSI_READDATA:
+				if ow_checkBUSY(tibbit.slot) then
+					' ready to Read data from Sensor
+					dim sensdata as string(9)
+					if not ow_read_data(sensdata, tibbit.slot, 9) then
+						' error
+						port.ssi_status = OW_SSI_NONE
+						tibbit.busy = false
+						#if OW_DEBUG_PRINT
+							ow_debug_print("Error read data of measurement on Port for sensor ROM: " + port.sensors(port.sensor_current).Sensor_ID)
+						#endif
+					else
+						' Calc data
+						select case asc(port.sensors(port.sensor_current).Sensor_ID)
+						case OW_SENSOR_TYPE_TEMPERATURE:
+							' temp = raw / 16
+							dim raw as word
+							raw = asc(mid(sensdata, 1, 1)) + asc(mid(sensdata, 2, 1)) * 256
+							if raw and &h800 then
+								' Minus
+								port.sensors(port.sensor_current).Data1 = - ((not raw) + 1) * 100 / 16
+							else
+								' Plus
+								port.sensors(port.sensor_current).Data1 = raw * 100 / 16
+							end if
+						end select
+						
+						' Select next sensor
+						if port.sensor_current < port.sensors_counter then
+							port.sensor_current = port.sensor_current + 1
+							if port.sensor_current = port.sensors_counter then
+								port.sensor_current = 0
+								port.status = OW_PS_WAIT
+								port.ssi_status = OW_SSI_NONE
+								tibbit.busy = false
+							end if
+						else
+							port.sensor_current = 0
+						end if
+						port.ssi_status = OW_SSI_NONE
+					end if
+				end if
+				
+			end select
+		end select
+	end if
+end sub
+
+function ow_send_string(data as string) as boolean
+
+	dim tmps as string
+	
+	tmps = ssi.str(data, PL_SSI_ACK_RX)
+	
+	if tmps <> data then
+		ow_send_string = false
+		#if OW_DEBUG_PRINT
+			ow_debug_print("Error send data over SSI")
+		#endif
+	else
+		ow_send_string = true
+	end if
+
+end function
+
+function ow_send_command(command as byte, ow_index as byte, slot as byte, port as byte) as boolean
+	
+	analog_i2c_get(slot, OW_SSI_NUM, OW_SSI_BAUDRATE)
+	analog_i2c_start(slot)		'I2C START
+	
+	if oneWire_Tibbits(ow_index).curr_channel <> port then
+		' Need select channel
+		if not ow_send_string(chr(OW_REGISTER_COMMAND_ADDRESS) + chr(OW_CMD_SELECTCHANNEL + port))	then' Send Command for Get Version
+			' error
+			#if OW_DEBUG_PRINT
+				ow_debug_print("Error send command Select Channel")
+			#endif
+			ow_send_command = false
+			exit function
+		end if
+		
+		analog_i2c_start(slot)		'I2C START
+		
+		oneWire_Tibbits(ow_index).curr_channel = port 
+
+	end if
+	
+	' Send
+	if ow_send_string(chr(OW_REGISTER_COMMAND_ADDRESS) + chr(command))	then' Send Command
+		ow_send_command = true
+	else
+		' error
+		ow_send_command = false
+	end if
+
+	analog_i2c_stop(slot)		'I2C STOP
+
+end function
+
+function ow_send_data(command as byte, rom as string(8), data as string(16), ow_index as byte, slot as byte, port as byte) as boolean
+
+	if len(data) > 0 and len(data) < 17 then
+		analog_i2c_get(slot, OW_SSI_NUM, OW_SSI_BAUDRATE)
+		analog_i2c_start(slot)		'I2C START
+		
+		if oneWire_Tibbits(ow_index).curr_channel <> port then
+			' Need select channel
+			if not ow_send_string(chr(OW_REGISTER_COMMAND_ADDRESS) + chr(OW_CMD_SELECTCHANNEL + port))	then' Send Command for Select Channel
+				' error
+				#if OW_DEBUG_PRINT
+					ow_debug_print("Error send command Select Channel")
+				#endif
+				ow_send_data = false
+				exit function
+			end if
+			
+			analog_i2c_start(slot)		'I2C START
+			
+			oneWire_Tibbits(ow_index).curr_channel = port 
+
+		end if
+		
+		' Send
+		if ow_send_string(chr(OW_REGISTER_COMMAND_ADDRESS) + chr(command + len(data) - 1) + rom + data) then' Send Command
+			ow_send_data = true
+		else
+			' error
+			ow_send_data = false
+		end if
+
+		analog_i2c_stop(slot)		'I2C STOP
+	else
+		ow_send_data = false
+	end if
+
+end function
+
+function ow_read_data(byref data as string, slot as byte, data_len as byte) as boolean
+	
+	dim i as byte
+	dim tmp as string
+	
+	
+	ow_read_data = true
+	tmp = ""
+
+	if data_len = 0 then exit function
+	
+	analog_i2c_get(slot, OW_SSI_NUM, OW_SSI_BAUDRATE)
+	analog_i2c_start(slot)		'I2C START
+
+	' Send address for read register
+	if ow_send_string(chr(OW_REGISTER_DATA_ADDRESS))	then' Send Command
+		i = 1
+		do
+			if i < data_len then
+				tmp = tmp + chr(ssi.value(&hFFFE, 9) / 2 and &h00FF)
+			else
+				tmp = tmp + chr(ssi.value(&hFFFF, 9) / 2 and &h00FF)
+			end if
+			i = i + 1
+		loop until i > data_len
+		
+		data = tmp
+		
+		ow_read_data = true
+	else
+		' error
+		ow_read_data = false
+	end if
+
+	analog_i2c_stop(slot)		'I2C START
+
+end function
+
+function ow_checkBUSY(slot as byte) as boolean
+	
+	io.num = io_get_num(slot, OW_BUSY_PIN)	' Get BUSY pin
+	if io.state = LOW then
+		' BUSY
+		ow_checkBUSY = false
+	else
+		ow_checkBUSY = true
+	end if
+	
+end function
+
+function ow_checkTibbit(slot as byte) as boolean
+
+	dim tmp1, tmp2, tmp3, tmp4 as byte
+	dim tmr as dword
+	
+	ow_checkTibbit = true
+
+	analog_i2c_init(slot)
+	
+	io.num = io_get_num(slot, OW_RST_PIN)	' Get RST pin
+	io.state = LOW
+	io.enabled = YES
+
+	io.num = io_get_num(slot, OW_BUSY_PIN)	' Get BUSY pin
+	io.state = HIGH
+	io.enabled = NO
+
+	io.num = io_get_num(slot, OW_RST_PIN)	' Get RST pin
+	io.state = HIGH
+	io.enabled = YES
+
+	' delay 10 ms for RESET in PIC uPC
+	tmr = sys.timercountms + 20
+	while tmr > sys.timercountms 
+	wend
+	
+	analog_i2c_get(slot, OW_SSI_NUM, OW_SSI_BAUDRATE)
+	analog_i2c_start(slot)		'I2C START
+	
+	' Send
+	if not ow_send_string(chr(OW_REGISTER_COMMAND_ADDRESS) + chr(OW_CMD_GETVERSION))	then' Send Command for Get Version
+		' error
+		#if OW_DEBUG_PRINT
+			ow_debug_print("Error send command GetVersion")
+		#endif
+		ow_checkTibbit = false
+	else
+		' Read data from PIC
+		' Send START
+		analog_i2c_start(slot)
+		
+		' Send Address
+		if not ow_send_string(chr(OW_REGISTER_DATA_ADDRESS))	then' Send data register address
+			' error
+			#if OW_DEBUG_PRINT
+				ow_debug_print("Error send Address for Read")
+			#endif
+			ow_checkTibbit = false
+		else
+			' Read Data 1
+			tmp1 = analog_i2c_read(true)
+			' Read Data 2
+			tmp2 = analog_i2c_read(true)
+			' Read Data 3
+			tmp3 = analog_i2c_read(true)
+			' Read Data 4
+			tmp4 = analog_i2c_read(false)
+		end if
+
+		' Send STOP
+		analog_i2c_stop(slot)
+
+		if tmp1 = &hAA and tmp2 = &h55 and tmp3 = &h0 and tmp4 = &h1 then
+			#if OW_DEBUG_PRINT
+				ow_debug_print("Version: " + hex(tmp1) + " " + hex(tmp2) + " " + hex(tmp3) + " " + hex(tmp4))
+			#endif
+		else
+			#if OW_DEBUG_PRINT
+				ow_debug_print("Version check failed: Version: " + hex(tmp1) + " " + hex(tmp2) + " " + hex(tmp3) + " " + hex(tmp4))
+			#endif
+			ow_checkTibbit = false
+		end if
+	end if
+	
+end function
+
+function ow_get_id_stored(tibbit_n as byte, port as byte, sensor_n as byte) as string(8)
+	
+	if tibbit_n >= 0 and tibbit_n < ONEWIRE_TIBBITS then
+		if sensor_n >=0 and sensor_n < ONEWIRE_SENSORS_PER_PORT then
+			select case tibbit_n
+			case 0:
+				select case port
+				case 0:
+					ow_get_id_stored = stg_get("O1", sensor_n)
+					
+				case 1:
+					ow_get_id_stored = stg_get("O2", sensor_n)
+				
+				case 2:
+					ow_get_id_stored = stg_get("O3", sensor_n)
+				
+				case 3:
+					ow_get_id_stored = stg_get("O4", sensor_n)
+				
+				case else:
+					ow_get_id_stored = chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0)
+					
+				end select
+			case 1:
+				select case port
+				case 0:
+					ow_get_id_stored = stg_get("O5", sensor_n)
+					
+				case 1:
+					ow_get_id_stored = stg_get("O6", sensor_n)
+				
+				case 2:
+					ow_get_id_stored = stg_get("O7", sensor_n)
+				
+				case 3:
+					ow_get_id_stored = stg_get("O8", sensor_n)
+				
+				case else:
+					ow_get_id_stored = chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0)
+					
+				end select
+			case else:
+				ow_get_id_stored = chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0)
+				
+			end select
+		end if
+	end if
+end function
+
+function ow_get_id(tibbit_n as byte, port as byte, sensor_n as byte) as string(8)
+	
+	if tibbit_n >= 0 and tibbit_n < ONEWIRE_TIBBITS then
+		if sensor_n >=0 and sensor_n < ONEWIRE_SENSORS_PER_PORT then
+			select case port
+			case 0:
+				ow_get_id = oneWire_Tibbits(tibbit_n).portA.sensors(sensor_n).Sensor_ID
+				
+			case 1:
+				ow_get_id = oneWire_Tibbits(tibbit_n).portB.sensors(sensor_n).Sensor_ID
+			
+			case 2:
+				ow_get_id = oneWire_Tibbits(tibbit_n).portC.sensors(sensor_n).Sensor_ID
+			
+			case 3:
+				ow_get_id = oneWire_Tibbits(tibbit_n).portD.sensors(sensor_n).Sensor_ID
+			
+			case else:
+				ow_get_id = chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0)
+				
+			end select
+		end if
+	end if
+end function
+
+function ow_get_find(tibbit_n as byte, port as byte) as byte
+	
+	if tibbit_n >= 0 and tibbit_n < ONEWIRE_TIBBITS then
+		select case port
+		case 0:
+			if oneWire_Tibbits(tibbit_n).portA.need_find then
+				ow_get_find = 1
+			else
+				ow_get_find = 0
+			end if
+			
+		case 1:
+			if oneWire_Tibbits(tibbit_n).portB.need_find then
+				ow_get_find = 1
+			else
+				ow_get_find = 0
+			end if
+		
+		case 2:
+			if oneWire_Tibbits(tibbit_n).portC.need_find then
+				ow_get_find = 1
+			else
+				ow_get_find = 0
+			end if
+		
+		case 3:
+			if oneWire_Tibbits(tibbit_n).portD.need_find then
+				ow_get_find = 1
+			else
+				ow_get_find = 0
+			end if
+		
+		case else:
+			ow_get_find = false
+			
+		end select
+	end if
+
+end function

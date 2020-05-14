@@ -66,16 +66,27 @@
 >>TF	E	B	4	0	255	A	0	SNMP Trap Specific Code
 >>BP	E	B	4	0	1	A	0	BP Sensors Available
 >>BS	E	B	64	0	255	A	0	BP Sensors List
->>CP	E	B	12	0	4	A	0	CProbes List
+>>CP	E	B	12	0	5	A	0	CProbes List
 >>BO	E	B	1	0	255	A	100	BProbes polling period in 50ms
 >>AA	E	B	1	0	1	A	1	Analog channels will generate event for AGG
 >>AD	E	B	1	0	1	A	1	Digital channels will generate event for AGG
 >>AC	E	B	1	0	1	A	1	Counters will generate event for AGG
 >>AB	E	B	1	0	1	A	1	BProbes will generate event for AGG
 >>WT	E	B	1	0	255	A	0	Installed WiFi Card Type
+>>O1	E	S	8	0	8	A	^	OneWire Sensors List 1
+>>O2	E	S	8	0	8	A	^	OneWire Sensors List 2
+>>O3	E	S	8	0	8	A	^	OneWire Sensors List 3
+>>O4	E	S	8	0	8	A	^	OneWire Sensors List 4
+>>O5	E	S	8	0	8	A	^	OneWire Sensors List 5
+>>O6	E	S	8	0	8	A	^	OneWire Sensors List 6
+>>O7	E	S	8	0	8	A	^	OneWire Sensors List 7
+>>O8	E	S	8	0	8	A	^	OneWire Sensors List 8
+>>P8	E	B	12	0	1	A	0	Port8bit 41 In Out
 #define STG_DESCRIPTOR_FILE "stg_tpp3.txt"
 #define STG_TIMESTAMP 1
-#define STG_MAX_NUM_SETTINGS 75
+#define STG_STORAGE_MEMORY 1
+#define STG_FILENAME "stg#"
+#define STG_MAX_NUM_SETTINGS 84
 #define STG_RAM_ARRAY_SIZE 0
 #define STG_MAX_SETTING_NAME_LEN 2
 #define STG_MAX_SETTING_VALUE_LEN 32

@@ -421,6 +421,142 @@ function modbus_get_input_register(register as word) as word
 		exit function
 	end if
 	
+	if register >= MODBUS_OW_LIST_PORT1_INPUT_REGISTER and register < MODBUS_OW_LIST_PORT1_INPUT_REGISTER + (ONEWIRE_SENSORS_PER_PORT * 7) then		' List of OneWire sensors Tibbit 1 PORT A
+		part = (register - MODBUS_OW_LIST_PORT1_INPUT_REGISTER) mod 7
+		dim id as string(8)
+		id = oneWire_Tibbits(0).portA.sensors((register - MODBUS_OW_LIST_PORT1_INPUT_REGISTER) / 9).Sensor_ID
+		select case part
+		case 0: modbus_get_input_register = asc(mid(id, 1, 1)) + (asc(mid(id, 2, 1)) * 256)	' ID part 1
+		case 1: modbus_get_input_register = asc(mid(id, 3, 1)) + (asc(mid(id, 4, 1)) * 256)	' ID part 2
+		case 2: modbus_get_input_register = asc(mid(id, 5, 1)) + (asc(mid(id, 6, 1)) * 256)	' ID part 3
+		case 3: modbus_get_input_register = asc(mid(id, 7, 1)) + (asc(mid(id, 8, 1)) * 256)	' ID part 4
+		case 4: modbus_get_input_register = oneWire_Tibbits(0).portA.sensors((register - MODBUS_OW_LIST_PORT1_INPUT_REGISTER) / 9).NoResponceCount
+		case 5: modbus_get_input_register = oneWire_Tibbits(0).portA.sensors((register - MODBUS_OW_LIST_PORT1_INPUT_REGISTER) / 9).Data1
+		case 6: modbus_get_input_register = oneWire_Tibbits(0).portA.sensors((register - MODBUS_OW_LIST_PORT1_INPUT_REGISTER) / 9).Data2
+		case else: modbus_get_input_register = &Hffff
+		end select
+		exit function
+	end if
+	
+	if register >= MODBUS_OW_LIST_PORT2_INPUT_REGISTER and register < MODBUS_OW_LIST_PORT2_INPUT_REGISTER + (ONEWIRE_SENSORS_PER_PORT * 7) then		' List of OneWire sensors Tibbit 1 PORT B
+		part = (register - MODBUS_OW_LIST_PORT2_INPUT_REGISTER) mod 7
+		dim id as string(8)
+		id = oneWire_Tibbits(0).portB.sensors((register - MODBUS_OW_LIST_PORT2_INPUT_REGISTER) / 9).Sensor_ID
+		select case part
+		case 0: modbus_get_input_register = asc(mid(id, 1, 1)) + (asc(mid(id, 2, 1)) * 256)	' ID part 1
+		case 1: modbus_get_input_register = asc(mid(id, 3, 1)) + (asc(mid(id, 4, 1)) * 256)	' ID part 2
+		case 2: modbus_get_input_register = asc(mid(id, 5, 1)) + (asc(mid(id, 6, 1)) * 256)	' ID part 3
+		case 3: modbus_get_input_register = asc(mid(id, 7, 1)) + (asc(mid(id, 8, 1)) * 256)	' ID part 4
+		case 4: modbus_get_input_register = oneWire_Tibbits(0).portB.sensors((register - MODBUS_OW_LIST_PORT2_INPUT_REGISTER) / 9).NoResponceCount
+		case 5: modbus_get_input_register = oneWire_Tibbits(0).portB.sensors((register - MODBUS_OW_LIST_PORT2_INPUT_REGISTER) / 9).Data1
+		case 6: modbus_get_input_register = oneWire_Tibbits(0).portB.sensors((register - MODBUS_OW_LIST_PORT2_INPUT_REGISTER) / 9).Data2
+		case else: modbus_get_input_register = &Hffff
+		end select
+		exit function
+	end if
+	
+	if register >= MODBUS_OW_LIST_PORT3_INPUT_REGISTER and register < MODBUS_OW_LIST_PORT3_INPUT_REGISTER + (ONEWIRE_SENSORS_PER_PORT * 7) then		' List of OneWire sensors Tibbit 1 PORT C
+		part = (register - MODBUS_OW_LIST_PORT3_INPUT_REGISTER) mod 7
+		dim id as string(8)
+		id = oneWire_Tibbits(0).portC.sensors((register - MODBUS_OW_LIST_PORT3_INPUT_REGISTER) / 9).Sensor_ID
+		select case part
+		case 0: modbus_get_input_register = asc(mid(id, 1, 1)) + (asc(mid(id, 2, 1)) * 256)	' ID part 1
+		case 1: modbus_get_input_register = asc(mid(id, 3, 1)) + (asc(mid(id, 4, 1)) * 256)	' ID part 2
+		case 2: modbus_get_input_register = asc(mid(id, 5, 1)) + (asc(mid(id, 6, 1)) * 256)	' ID part 3
+		case 3: modbus_get_input_register = asc(mid(id, 7, 1)) + (asc(mid(id, 8, 1)) * 256)	' ID part 4
+		case 4: modbus_get_input_register = oneWire_Tibbits(0).portC.sensors((register - MODBUS_OW_LIST_PORT3_INPUT_REGISTER) / 9).NoResponceCount
+		case 5: modbus_get_input_register = oneWire_Tibbits(0).portC.sensors((register - MODBUS_OW_LIST_PORT3_INPUT_REGISTER) / 9).Data1
+		case 6: modbus_get_input_register = oneWire_Tibbits(0).portC.sensors((register - MODBUS_OW_LIST_PORT3_INPUT_REGISTER) / 9).Data2
+		case else: modbus_get_input_register = &Hffff
+		end select
+		exit function
+	end if
+	
+	if register >= MODBUS_OW_LIST_PORT4_INPUT_REGISTER and register < MODBUS_OW_LIST_PORT4_INPUT_REGISTER + (ONEWIRE_SENSORS_PER_PORT * 7) then		' List of OneWire sensors Tibbit 1 PORT D
+		part = (register - MODBUS_OW_LIST_PORT4_INPUT_REGISTER) mod 7
+		dim id as string(8)
+		id = oneWire_Tibbits(0).portD.sensors((register - MODBUS_OW_LIST_PORT4_INPUT_REGISTER) / 9).Sensor_ID
+		select case part
+		case 0: modbus_get_input_register = asc(mid(id, 1, 1)) + (asc(mid(id, 2, 1)) * 256)	' ID part 1
+		case 1: modbus_get_input_register = asc(mid(id, 3, 1)) + (asc(mid(id, 4, 1)) * 256)	' ID part 2
+		case 2: modbus_get_input_register = asc(mid(id, 5, 1)) + (asc(mid(id, 6, 1)) * 256)	' ID part 3
+		case 3: modbus_get_input_register = asc(mid(id, 7, 1)) + (asc(mid(id, 8, 1)) * 256)	' ID part 4
+		case 4: modbus_get_input_register = oneWire_Tibbits(0).portD.sensors((register - MODBUS_OW_LIST_PORT4_INPUT_REGISTER) / 9).NoResponceCount
+		case 5: modbus_get_input_register = oneWire_Tibbits(0).portD.sensors((register - MODBUS_OW_LIST_PORT4_INPUT_REGISTER) / 9).Data1
+		case 6: modbus_get_input_register = oneWire_Tibbits(0).portD.sensors((register - MODBUS_OW_LIST_PORT4_INPUT_REGISTER) / 9).Data2
+		case else: modbus_get_input_register = &Hffff
+		end select
+		exit function
+	end if
+	
+	if register >= MODBUS_OW_LIST_PORT5_INPUT_REGISTER and register < MODBUS_OW_LIST_PORT5_INPUT_REGISTER + (ONEWIRE_SENSORS_PER_PORT * 7) then		' List of OneWire sensors Tibbit 2 PORT A
+		part = (register - MODBUS_OW_LIST_PORT5_INPUT_REGISTER) mod 7
+		dim id as string(8)
+		id = oneWire_Tibbits(1).portA.sensors((register - MODBUS_OW_LIST_PORT5_INPUT_REGISTER) / 9).Sensor_ID
+		select case part
+		case 0: modbus_get_input_register = asc(mid(id, 1, 1)) + (asc(mid(id, 2, 1)) * 256)	' ID part 1
+		case 1: modbus_get_input_register = asc(mid(id, 3, 1)) + (asc(mid(id, 4, 1)) * 256)	' ID part 2
+		case 2: modbus_get_input_register = asc(mid(id, 5, 1)) + (asc(mid(id, 6, 1)) * 256)	' ID part 3
+		case 3: modbus_get_input_register = asc(mid(id, 7, 1)) + (asc(mid(id, 8, 1)) * 256)	' ID part 4
+		case 4: modbus_get_input_register = oneWire_Tibbits(1).portA.sensors((register - MODBUS_OW_LIST_PORT5_INPUT_REGISTER) / 9).NoResponceCount
+		case 5: modbus_get_input_register = oneWire_Tibbits(1).portA.sensors((register - MODBUS_OW_LIST_PORT5_INPUT_REGISTER) / 9).Data1
+		case 6: modbus_get_input_register = oneWire_Tibbits(1).portA.sensors((register - MODBUS_OW_LIST_PORT5_INPUT_REGISTER) / 9).Data2
+		case else: modbus_get_input_register = &Hffff
+		end select
+		exit function
+	end if
+	
+	if register >= MODBUS_OW_LIST_PORT6_INPUT_REGISTER and register < MODBUS_OW_LIST_PORT6_INPUT_REGISTER + (ONEWIRE_SENSORS_PER_PORT * 7) then		' List of OneWire sensors Tibbit 2 PORT B
+		part = (register - MODBUS_OW_LIST_PORT6_INPUT_REGISTER) mod 7
+		dim id as string(8)
+		id = oneWire_Tibbits(1).portB.sensors((register - MODBUS_OW_LIST_PORT6_INPUT_REGISTER) / 9).Sensor_ID
+		select case part
+		case 0: modbus_get_input_register = asc(mid(id, 1, 1)) + (asc(mid(id, 2, 1)) * 256)	' ID part 1
+		case 1: modbus_get_input_register = asc(mid(id, 3, 1)) + (asc(mid(id, 4, 1)) * 256)	' ID part 2
+		case 2: modbus_get_input_register = asc(mid(id, 5, 1)) + (asc(mid(id, 6, 1)) * 256)	' ID part 3
+		case 3: modbus_get_input_register = asc(mid(id, 7, 1)) + (asc(mid(id, 8, 1)) * 256)	' ID part 4
+		case 4: modbus_get_input_register = oneWire_Tibbits(1).portB.sensors((register - MODBUS_OW_LIST_PORT6_INPUT_REGISTER) / 9).NoResponceCount
+		case 5: modbus_get_input_register = oneWire_Tibbits(1).portB.sensors((register - MODBUS_OW_LIST_PORT6_INPUT_REGISTER) / 9).Data1
+		case 6: modbus_get_input_register = oneWire_Tibbits(1).portB.sensors((register - MODBUS_OW_LIST_PORT6_INPUT_REGISTER) / 9).Data2
+		case else: modbus_get_input_register = &Hffff
+		end select
+		exit function
+	end if
+	
+	if register >= MODBUS_OW_LIST_PORT7_INPUT_REGISTER and register < MODBUS_OW_LIST_PORT7_INPUT_REGISTER + (ONEWIRE_SENSORS_PER_PORT * 7) then		' List of OneWire sensors Tibbit 2 PORT C
+		part = (register - MODBUS_OW_LIST_PORT7_INPUT_REGISTER) mod 7
+		dim id as string(8)
+		id = oneWire_Tibbits(1).portC.sensors((register - MODBUS_OW_LIST_PORT7_INPUT_REGISTER) / 9).Sensor_ID
+		select case part
+		case 0: modbus_get_input_register = asc(mid(id, 1, 1)) + (asc(mid(id, 2, 1)) * 256)	' ID part 1
+		case 1: modbus_get_input_register = asc(mid(id, 3, 1)) + (asc(mid(id, 4, 1)) * 256)	' ID part 2
+		case 2: modbus_get_input_register = asc(mid(id, 5, 1)) + (asc(mid(id, 6, 1)) * 256)	' ID part 3
+		case 3: modbus_get_input_register = asc(mid(id, 7, 1)) + (asc(mid(id, 8, 1)) * 256)	' ID part 4
+		case 4: modbus_get_input_register = oneWire_Tibbits(1).portC.sensors((register - MODBUS_OW_LIST_PORT7_INPUT_REGISTER) / 9).NoResponceCount
+		case 5: modbus_get_input_register = oneWire_Tibbits(1).portC.sensors((register - MODBUS_OW_LIST_PORT7_INPUT_REGISTER) / 9).Data1
+		case 6: modbus_get_input_register = oneWire_Tibbits(1).portC.sensors((register - MODBUS_OW_LIST_PORT7_INPUT_REGISTER) / 9).Data2
+		case else: modbus_get_input_register = &Hffff
+		end select
+		exit function
+	end if
+	
+	if register >= MODBUS_OW_LIST_PORT8_INPUT_REGISTER and register < MODBUS_OW_LIST_PORT8_INPUT_REGISTER + (ONEWIRE_SENSORS_PER_PORT * 7) then		' List of OneWire sensors Tibbit 2 PORT D
+		part = (register - MODBUS_OW_LIST_PORT8_INPUT_REGISTER) mod 7
+		dim id as string(8)
+		id = oneWire_Tibbits(1).portD.sensors((register - MODBUS_OW_LIST_PORT8_INPUT_REGISTER) / 9).Sensor_ID
+		select case part
+		case 0: modbus_get_input_register = asc(mid(id, 1, 1)) + (asc(mid(id, 2, 1)) * 256)	' ID part 1
+		case 1: modbus_get_input_register = asc(mid(id, 3, 1)) + (asc(mid(id, 4, 1)) * 256)	' ID part 2
+		case 2: modbus_get_input_register = asc(mid(id, 5, 1)) + (asc(mid(id, 6, 1)) * 256)	' ID part 3
+		case 3: modbus_get_input_register = asc(mid(id, 7, 1)) + (asc(mid(id, 8, 1)) * 256)	' ID part 4
+		case 4: modbus_get_input_register = oneWire_Tibbits(1).portD.sensors((register - MODBUS_OW_LIST_PORT8_INPUT_REGISTER) / 9).NoResponceCount
+		case 5: modbus_get_input_register = oneWire_Tibbits(1).portD.sensors((register - MODBUS_OW_LIST_PORT8_INPUT_REGISTER) / 9).Data1
+		case 6: modbus_get_input_register = oneWire_Tibbits(1).portD.sensors((register - MODBUS_OW_LIST_PORT8_INPUT_REGISTER) / 9).Data2
+		case else: modbus_get_input_register = &Hffff
+		end select
+		exit function
+	end if
+	
 	modbus_get_input_register = &Hffff			' Unknown register
 
 end function

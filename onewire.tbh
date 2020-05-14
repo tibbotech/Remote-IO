@@ -1,5 +1,6 @@
 
-#define ONEWIRE_SENSORS_PER_CHANNEL	8
+#define ONEWIRE_SENSORS_PER_PORT	8
+#define ONEWIRE_TIBBITS		2
 
 #if PLATFORM_ID = TPP3WG2
 	#define ONEWIRE_SLOTS	11
@@ -7,33 +8,56 @@
 	#define ONEWIRE_SLOTS	6
 #endif
 
-enum ONEWIRE_TYPE
-	OW_NONE,
-	OW_UNKNOWN,
-	OW_TEMP,
-	OW_HUM
+enum ONEWIRE_PORT_STATUS
+	OW_PS_NONE,
+	OW_PS_WAIT,
+	OW_PS_FIND,
+	OW_PS_READ
+end enum
+
+enum ONEWIRE_SSI_STATUS
+	OW_SSI_NONE,
+	OW_SSI_FINDFIRST,
+	OW_SSI_FINDNEXT,
+	OW_SSI_MEASURE,
+	OW_SSI_WAITDATA,
+	OW_SSI_READDATA
 end enum
 
 type ONEWIRE_SENSOR
 	Sensor_ID as string(8)
-	Sensor_Type as ONEWIRE_TYPE
 	NoResponceCount as word
 	Data1 as word
 	Data2 as word
-	Data3 as word
-	Data4 as word
-	Data5 as word
-	Data6 as word
 end type
 
 type ONEWIRE_PORT
-	sensors(ONEWIRE_SENSORS_PER_CHANNEL) as ONEWIRE_SENSOR
+	need_find as boolean
+	status as ONEWIRE_PORT_STATUS
+	ssi_status as ONEWIRE_SSI_STATUS
+	sensors_counter as byte
+	sensor_current as byte
+	sensors(ONEWIRE_SENSORS_PER_PORT) as ONEWIRE_SENSOR
 end type
 
 type ONEWIRE_TIBBIT
+	active as boolean
+	slot as byte
+	busy as boolean
+	curr_channel as byte
 	portA as ONEWIRE_PORT
 	portB as ONEWIRE_PORT
 	portC as ONEWIRE_PORT
 	portD as ONEWIRE_PORT
 end type
 
+#define OW_SENSOR_TYPE_TEMPERATURE	&h28
+
+declare oneWire_Tibbits(ONEWIRE_TIBBITS) as ONEWIRE_TIBBIT
+
+declare sub oneWire_Init()
+declare sub oneWire_Loop()
+
+declare sub ow_start_find()
+declare function ow_get_id(tibbit_n as byte, port as byte, sensor_n as byte) as string(8)
+declare function ow_get_find(tibbit_n as byte, port as byte) as byte

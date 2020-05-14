@@ -1229,7 +1229,7 @@ sub callback_stg_post_set(byref stg_name_or_num as string, index as byte,byref s
 			ser.enabled=no
 			for b=0 to NUM_OF_IO-1
 				io.num=index_to_io_num(b)
-				io.enabled=param_io(b).io_enabled
+				io.enabled= YES '(b).io_enabled
 				if param_io(b).io_enabled=1 and param_io(b).io_output=1 then
 					io.state=LOW
 				else

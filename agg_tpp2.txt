@@ -54,7 +54,7 @@
 >>cc	<R=<cc><<<num><I><D=Channel for Clear Counter><V=<L=1 24>>><M=1><X=1>><<M=0><X=0>><Clear Counter><^><remote|RemoteIO>>
 ==events	root
 >>io	I2	<R=<io><<<num><I><D=IO channel>><<st><I><D=IO State><S=<Low=0><High=1>>><M=1><X=1>><IO State Changed><^><2><remote>>
->>ser	I2	<R=<ser><<<num><I><D=Serial port><S=<Port 1=0><Port 2=1><Port 3=2><Port 4=3>>><<data><S><D=Data>><<hex><S><D=Hex>><M=1><X=1>><Serial Data Recieved><^><2><remote>>
+>>ser	I2	<R=<ser><<<num><I><D=Serial port><S=<Port 1=0><Port 2=1><Port 3=2><Port 4=3>>><<hex><S><D=Hex>><M=1><X=1>><Serial Data Recieved><^><2><remote>>
 >>ai	I2	<R=<ai><<<ch><I><D=Analog channel>><<value><F><D=Analog value>><M=1><X=1>><Analog values><^><2><remote>>
 >>count	I2	<R=<count><<<num><I>><<value><I>><M=1><X=1>><IO Pin Counter><^><2><remote>>
 >>bp	I2	<R=<bp><<<port><I><D=Serial Port  Number><S=<Port 1=0><Port 2=1><Port 3=2><Port 4=3>>><<userID><I><D=Modbus UserID>><<type><I><S=<Temp=1><TempHum=2><Light=3><3AxisAccel=4>>><<data1><I><D=Data1>><<data2><S><D=Data2>><<data3><S><D=Data3>><M=1><X=1>><BP sensors data event><^><2><remote>>

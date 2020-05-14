@@ -6,6 +6,48 @@ enum io_direction
 	io_direction_both
 end enum
 
+' #41 constants
+const SSI_NUM_41 = 2
+const SSI_BAUDRATE_41 = 5
+
+const TBT41_WRITE_ADDR=&h40
+const TBT41_READ_CODE=&h41
+
+enum tbt41_regs
+	TBT41_ADDR_IODIR=&h00,
+	TBT41_ADDR_IPOL=&h01,
+	TBT41_ADDR_GPINTEN=&h02,
+	TBT41_ADDR_DEFVAL=&h03,
+	TBT41_ADDR_INTCON=&h04,
+	TBT41_ADDR_IOCON=&h05,
+	TBT41_ADDR_GPPU=&h06,
+	TBT41_ADDR_INTF=&h07,
+	TBT41_ADDR_INTCAP=&h08,
+	TBT41_ADDR_GPIO=&h09,
+	TBT41_ADDR_OLAT=&h0A
+end enum
+
+enum tbt41_clr_set
+	TBT41_BIT_CLEAR,
+	TBT41_BIT_SET
+end enum
+
+enum ext_line_name
+	EXT_LINE_1=0,
+	EXT_LINE_2=1,
+	EXT_LINE_3=2,
+	EXT_LINE_4=3,
+	EXT_LINE_5=4,
+	EXT_LINE_6=5,
+	EXT_LINE_7=6,
+	EXT_LINE_8=7	
+end enum
+
+declare sub io_8bitPort_setup(slot as byte, direction as byte)
+declare sub io_tbt41_reg_write(slot as byte, reg as tbt41_regs, data as byte)
+declare function io_tbt41_reg_read(slot as byte, addr as tbt41_regs)as byte
+declare function io_tbt41_get_data(slot as byte) as byte
+
 public dim io_cn(NUM_OF_IO) as io_counter
 public dim io_cprobes(NUM_I2C_SLOTS) as io_cprobe
 declare function io_get_num(socket as byte, pin as byte) as byte
@@ -161,7 +203,12 @@ sub setup_io()
 			
 		case SLOT_OD_1:
 			io_setup(i, 0, io_direction_output)
-			
+
+		case SLOT_8BIT:
+			param_io(i*4).io_enabled = val(stg_get("P8", i))
+			analog_i2c_init(i)
+			io_8bitPort_setup(i, param_io(i*4).io_enabled)
+
 		end select
 
 	next i
@@ -335,7 +382,12 @@ sub digital_loop()
 			
 		case SLOT_OD_1:
 			io_check(i, 0, io_direction_output)
-			
+
+		case SLOT_8BIT:
+			if param_io(i*4).io_enabled = 0 then	' INPUT
+				' TBT41_ADDR_GPIO
+				analog_values(i*4) = io_tbt41_get_data(i)
+			end if
 		end select
 
 	next i
@@ -573,6 +625,55 @@ function io_set(channel as word, value as low_high) as boolean
 					io_set = false
 				end if
 				
+			case SLOT_OA_3:		' PWM #16, #17
+				select case pin
+				case 0:
+					if analog_pwm_enable(channel) = true then
+						if value = LOW then
+							analog_pic_pwm_stop(socket, 0)
+							analog_pwm_enable(channel) = false
+							param_io(channel).io_state = LOW
+						end if
+					else
+						if value = HIGH then
+							analog_pic_pwm_start(socket, 0)
+							analog_pwm_enable(channel) = true
+							param_io(channel).io_state = HIGH
+						end if
+					end if
+				case 1:
+					if analog_pwm_enable(channel) = true then
+						if value = LOW then
+							analog_pic_pwm_stop(socket, 1)
+							analog_pwm_enable(channel) = false
+							param_io(channel).io_state = LOW
+						end if
+					else
+						if value = HIGH then
+							analog_pic_pwm_start(socket, 1)
+							analog_pwm_enable(channel) = true
+							param_io(channel).io_state = HIGH
+						end if
+					end if
+				case 2:
+					if analog_pwm_enable(channel) = true then
+						if value = LOW then
+							analog_pic_pwm_stop(socket, 2)
+							analog_pwm_enable(channel) = false
+							param_io(channel).io_state = LOW
+						end if
+					else
+						if value = HIGH then
+							analog_pic_pwm_start(socket, 2)
+							analog_pwm_enable(channel) = true
+							param_io(channel).io_state = HIGH
+						end if
+					end if
+				case else:
+					io_set = false
+				end select
+				io_set = true
+
 			case else:
 				io_set = false
 				
@@ -804,4 +905,106 @@ function io_get_num(slot as byte, pin as byte) as byte
 		io_get_num = 255
 	end if
 
+end function
+
+'	#41 8bit port
+sub io_tbt41_set_output(slot as byte)
+
+	analog_i2c_get(slot, SSI_NUM_41, SSI_BAUDRATE_41)
+	
+	io_tbt41_reg_write(slot, TBT41_ADDR_IODIR, &h00)
+	io_tbt41_reg_write(slot, TBT41_ADDR_GPPU, &h00)
+	
+end sub
+
+sub io_tbt41_set_input(slot as byte)
+
+	analog_i2c_get(slot, SSI_NUM_41, SSI_BAUDRATE_41)
+	
+	io_tbt41_reg_write(slot, TBT41_ADDR_IODIR, &hff)
+	io_tbt41_reg_write(slot, TBT41_ADDR_GPPU, &hff)
+	
+end sub
+
+sub io_tbt41_set_data(slot as byte, data as byte)
+	
+	analog_i2c_get(slot, SSI_NUM_41, SSI_BAUDRATE_41)
+	
+	io_tbt41_reg_write(slot, TBT41_ADDR_GPIO, data)
+	
+end sub
+
+function io_tbt41_get_data(slot as byte) as byte
+
+	analog_i2c_get(slot, SSI_NUM_41, SSI_BAUDRATE_41)
+	
+	io_tbt41_get_data = io_tbt41_reg_read(slot, TBT41_ADDR_GPIO)
+	
+end function
+	
+sub io_8bitPort_setup(slot as byte, direction as byte)
+
+'Call this function to initialize the Tibbit.
+'Use_ssi argument specifies whether you want to communicate with this Tibbit using the SSI channel running in the I2C mode (YES), or
+'go for direct I/O manipulation a.k.a. bit-banging (NO).
+	
+	analog_i2c_get(slot, SSI_NUM_41, SSI_BAUDRATE_41)
+
+	dim value as byte
+	io_tbt41_reg_write(slot, TBT41_ADDR_IODIR, &hFF)
+	if io_tbt41_reg_read(slot, TBT41_ADDR_IODIR) <> &hFF then
+		' Init tibbit fail
+		param_st(slot) = SLOT_EMPTY
+		exit sub
+	end if
+
+	io_tbt41_reg_write(slot, TBT41_ADDR_IPOL, &h0)
+	value = io_tbt41_reg_read(slot, TBT41_ADDR_IPOL)
+	if value <> &h0 then
+		' Init tibbit fail
+		param_st(slot) = SLOT_EMPTY
+		exit sub
+	end if
+
+	dim r as tbt41_regs
+	'for r = TBT41_ADDR_IODIR to TBT41_ADDR_OLAT
+	'	value = io_tbt41_reg_read(slot, r)
+	'next r
+	
+	for r = TBT41_ADDR_GPINTEN to TBT41_ADDR_OLAT
+		io_tbt41_reg_write(slot, r, &h0)
+	next r
+	
+	if direction = 0 then	' INPUT
+		io_tbt41_set_input(slot)
+	else					' OUTPUT
+		io_tbt41_set_output(slot)
+	end if
+
+end sub
+
+sub io_tbt41_reg_write(slot as byte, reg as tbt41_regs, data as byte)
+
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT41_WRITE_ADDR)
+	analog_i2c_write(reg)
+	analog_i2c_write(data)
+	analog_i2c_stop(slot)
+	
+end sub
+
+function io_tbt41_reg_read(slot as byte, addr as tbt41_regs)as byte
+
+	'dim res as string
+	
+	analog_i2c_start(slot)
+	'res = ssi.str(chr(TBT41_WRITE_ADDR) + chr(addr),PL_SSI_ACK_RX)
+	analog_i2c_write(TBT41_WRITE_ADDR)
+	analog_i2c_write(addr)
+	'analog_i2c_stop(slot)
+	analog_i2c_start(slot)
+	analog_i2c_write(TBT41_READ_CODE)
+	io_tbt41_reg_read = analog_i2c_read(false)
+	analog_i2c_stop(slot)
+	
 end function

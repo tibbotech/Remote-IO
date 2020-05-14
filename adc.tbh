@@ -30,3 +30,11 @@ declare function analog_pwm_set(channel as byte, pulse as word) as boolean
 declare sub analog_pic_pwm_start(slot as byte, pin as byte)
 declare sub analog_pic_pwm_stop(slot as byte, pin as byte)
 declare function analog_pwm_onoff(channel as byte, en as boolean) as boolean
+
+'	I2C declare
+declare sub analog_i2c_init(slot as byte)
+declare sub analog_i2c_get(slot as byte, ssi_num as byte, ssi_baudrate as byte)
+declare sub analog_i2c_start(slot as byte)
+declare sub analog_i2c_stop(slot as byte)
+declare sub analog_i2c_write(data as byte)
+declare function analog_i2c_read(acknak_request as boolean) as byte

@@ -39,6 +39,14 @@ public sub boot()
 		lan_network_state = 255
 	#endif
 	
+	
+	if fd.ready = NO then
+		if fd.mount <> PL_FD_STATUS_OK then
+			' Format Flash Disk
+			fd.format(fd.availableflashspace, 64)
+		end if
+	end if
+		
 	if stg_start() <> EN_STG_STATUS_OK then
 		pat.play(PAT_BLINK_BOTH_TOGETHER_FAST, PL_PAT_NOINT)
 		exit sub
@@ -252,6 +260,12 @@ public sub boot()
 '===================================================
 	for f = 0 to NUM_OF_SLOTS - 1
 		param_st(f) = get_TibbitType(stg_get("ST", f*2))
+		if param_st(f) = SLOT_IOD_2 then
+			' test #41
+			if get_TibbitType(stg_get("ST", f*2 + 1)) = SLOT_8BIT then
+				param_st(f) = SLOT_8BIT
+			end if
+		end if
 '		if f = 1 or f = 3 then
 '			if param_st(f-1) = SLOT_SERIAL_02 or
 '			   param_st(f-1) = SLOT_IA_52 or
@@ -313,6 +327,7 @@ public sub boot()
 	setup_io()
 	setup_serial()
 	analog_setup()
+	oneWire_Init()
 	
 '===================================================
 
@@ -842,6 +857,12 @@ function get_TibbitType(tibbit as string(4)) as en_slot_type
 	case "59"
 		get_TibbitType = SLOT_OD_2
 
+	case "31"
+		get_TibbitType = SLOT_OW
+
+	case "41"
+		get_TibbitType = SLOT_8BIT
+		
 	case else:
 		get_TibbitType = SLOT_EMPTY
 		

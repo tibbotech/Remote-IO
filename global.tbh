@@ -14,6 +14,7 @@ const FIRMWARE_VERSION="{RemoteIO.1.00.00}"
 #define NUM_SERIAL_PORTS 4
 #define MODBUS_SOCKS_MAX	7
 
+#define OW_DEBUG_PRINT 0
 #define BP_DEBUG_PRINT 0
 #define LUIS_DEBUG_PRINT 0
 #define STG_DEBUG_PRINT 0
@@ -51,7 +52,6 @@ const LOGIN_TIMEOUT = 1500
 	#define STG_FILE "stg_tpp3.txt"
 	#define SDF_FILE "sdf_tpp3.txt"
 	#define MAX_NUM_SDF_LINES 633
-	#define SUPPORTS_DISPLAY 0
 	includepp "stg_tpp3.txt"
 	includepp "agg_tpp3.txt"
 #elif PLATFORM_ID = TPP2WG2
@@ -79,7 +79,6 @@ const LOGIN_TIMEOUT = 1500
 	#define STG_FILE "stg_tpp2.txt"
 	#define SDF_FILE "sdf_tpp2.txt"
 	#define MAX_NUM_SDF_LINES 369
-	#define SUPPORTS_DISPLAY 0
 	includepp "stg_tpp2.txt"
 	includepp "agg_tpp2.txt"
 #else

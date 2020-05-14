@@ -467,7 +467,6 @@ sub bp_start_find()
 			bp_sensorsCount(port) = 0
 		end if
 	end if
-	
 
 end sub
 

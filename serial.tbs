@@ -77,7 +77,7 @@ sub setup_serial()
 				end if
 
 				ser.enabled = NO
-				ser.rxbuffrq(2)
+				ser.rxbuffrq(5)
 				ser.txbuffrq(2)			
 				sys.buffalloc()
 				ser.enabled = YES
@@ -270,44 +270,36 @@ public function set_ser_channel_05(channel_num as byte) as boolean
 	ser.num = channel_num
 	ser.enabled = NO
 	
-	select case param_sp(channel_num)
-	case 3:	' #05 RS485
-		select case channel_num
-		case 0:
+	select case channel_num
+	case 0:
+		ser.interface = PL_SER_SI_HALFDUPLEX
+		set_ser_channel_05 = true
+		
+	case 1:
+		if param_st(channel_num - 1) <> SLOT_SERIAL_02 then	' Channel 1 is active only for tibbit #01 or #05 installed in Channel 0
 			ser.interface = PL_SER_SI_HALFDUPLEX
 			set_ser_channel_05 = true
-			
-		case 1:
-			if param_st(channel_num - 1) <> SLOT_SERIAL_02 then	' Channel 1 is active only for tibbit #01 or #05 installed in Channel 0
-				ser.interface = PL_SER_SI_HALFDUPLEX
-				set_ser_channel_05 = true
-			else
-				set_ser_channel_05 = false
-			end if
-			
-		case 2:
-			ser.interface = PL_SER_SI_HALFDUPLEX
-			set_ser_channel_05 = true
-			
-		case 3:
-			if param_st(channel_num - 1) <> SLOT_SERIAL_02 then	' Channel 3 is active only for tibbit #01 or #05 installed in Channel 2
-				ser.interface = PL_SER_SI_HALFDUPLEX
-				set_ser_channel_05 = true
-			else
-				set_ser_channel_05 = false
-			end if
-
-		case else:
+		else
 			set_ser_channel_05 = false
-			
-		end select
-	
+		end if
+		
+	case 2:
+		ser.interface = PL_SER_SI_HALFDUPLEX
+		set_ser_channel_05 = true
+		
+	case 3:
+		if param_st(channel_num - 1) <> SLOT_SERIAL_02 then	' Channel 3 is active only for tibbit #01 or #05 installed in Channel 2
+			ser.interface = PL_SER_SI_HALFDUPLEX
+			set_ser_channel_05 = true
+		else
+			set_ser_channel_05 = false
+		end if
+
 	case else:
 		set_ser_channel_05 = false
 		
 	end select
-
-
+	
 	if set_ser_channel_05 = true then
 		serial_set_port_general(channel_num)
 	end if
@@ -321,7 +313,7 @@ sub serial_set_port_general(channel_num as byte)
 	baudrate_set(param_br(channel_num))
 	ser.parity = param_pr(channel_num)
 	ser.bits = param_bb(channel_num)
-	'ser.interchardelay = val(stg_get("MD", channel_num))
+	ser.interchardelay = 5 'val(stg_get("MD", channel_num))
 	ser.esctype = PL_SER_ET_DISABLED
 
 end sub

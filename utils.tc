@@ -514,6 +514,19 @@ send_setting(string sname)
 		sock_send("[");
 		for(i=0; i<ns; ++i) {
 			sval = stg_get(sname, i);
+			if ((sname == "O1") || (sname == "O2") || (sname == "O3") || (sname == "O4") || (sname == "O5") || (sname == "O6") || (sname == "O7") || (sname == "O8")) {
+				string hexStr;
+				string hexVal = "";
+				for (int i = 1; i <= 8; i++) {
+					hexStr = hex(asc(mid(sval, i, 1)));
+					if (len(hexStr) == 3) {
+						hexVal += "0" + right(hexStr, 1);
+					} else {
+						hexVal += right(hexStr, 2);
+					}
+				}
+				sval = hexVal;
+			}
 			sock_send("\""+sval+"\"");
 			if(i < ns-1)
 				sock_send(",");
@@ -555,6 +568,66 @@ void send_bp_sensors_list()
 		sock_send("\""+sval+"\"");
 		if (i != 3)
 			sock_send(",");
+	}
+	sock_send("]");
+}
+
+void send_ow_sensors_list()
+{
+	unsigned char ns, i, j, k;
+	unsigned char slot, port;
+	string sval;
+	string hexStr;
+	string hexVal;
+	
+	slot = 0;
+	port = 0;
+	for (i = 0; i < 8; i++) {
+		sock_send("\"O" + str(i + 1) + "\":");
+		
+		sock_send("[");
+		for (j = 0; j < 8; j++) {
+			sval = ow_get_id(slot, port, j);
+			hexVal = "";
+			for (int k = 1; k <= 8; k++) {
+				hexStr = hex(asc(mid(sval, k, 1)));
+				if (len(hexStr) == 3) {
+					hexVal += "0" + right(hexStr, 1);
+				} else {
+					hexVal += right(hexStr, 2);
+				}
+			}
+			sock_send("\"" + hexVal + "\"");
+			if (j < 7)
+				sock_send(",");
+		}
+			
+		port++;
+		if (port == 4) {
+			slot++;
+			port = 0;
+		}
+
+		sock_send("],");
+	}
+	
+	// send FIND flags
+	sock_send("\"FIND\":");
+	
+	sock_send("[");
+	slot = 0;
+	port = 0;
+	for(i = 0; i < 8; ++i) {
+		sval = str(ow_get_find(slot, port));
+		sock_send("\""+sval+"\"");
+		if (i != 7)
+			sock_send(",");
+
+		port++;
+		if (port == 4) {
+			slot++;
+			port = 0;
+		}
 	}
 	sock_send("]");
 }
@@ -632,6 +705,21 @@ send_bp()
 }
 
 void
+send_ow()
+{
+	#if PLATFORM_ID == TPP3WG2
+	sock_send("{\"options\":{\n\"xtxt\":\"" + STG_FILE_C + "\"\n,\"board\":\"TPP3\"\n},\n\"settings\":{\n");
+	#endif
+	#if PLATFORM_ID == TPP2WG2
+	sock_send("{\"options\":{\n\"xtxt\":\"" + STG_FILE_C + "\"\n,\"board\":\"TPP2\"\n},\n\"settings\":{\n");
+	#endif
+	send_ow_sensors_list();
+	sock_send("}\n}\n");
+	
+	sock.send();
+}
+
+void
 send_sdf()
 {
 	string tmp;
@@ -663,7 +751,12 @@ setting_update(string name, string value)
 		idx = mid(name, b+1, 255);
 		
 		//DBG("Setting "+n+" #" + idx + " = "+value);
-		stg_set(n, val(idx)-1, value);
+		if ((name == "O1") || (name == "O2") || (name == "O3") || (name == "O4") || (name == "O5") || (name == "O6") || (name == "O7") || (name == "O8")) {
+			if (value == "0000000000000000")
+				stg_set(n, val(idx)-1, chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0) + chr(0));
+		} else {
+			stg_set(n, val(idx)-1, value);
+		}
 	} else {
 		//DBG("Setting "+name+"="+value);
 		stg_set(name, 0, value);
@@ -674,6 +767,12 @@ void
 bp_find()
 {
 	bp_start_find();
+}
+
+void
+ow_find()
+{
+	ow_start_find();
 }
 
 string
