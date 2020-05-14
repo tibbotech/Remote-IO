@@ -224,6 +224,7 @@ include "modbus.tbh"
 include "snmp.tbh"
 include "bp.tbh"
 include "onewire.tbh"
+include "api.tbh"
 
 declare function FloatToDWord(fData as float) as dword
 

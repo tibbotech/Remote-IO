@@ -1,0 +1,171 @@
+include "global.tbh"
+
+sub api_sendError()
+	sock.setdata("ERROR")
+	sock.send()
+end sub
+
+sub api_sendSock(data as string)
+	
+	if len(data) > sock.txfree then
+		sock.send()
+	end if
+	
+	sock.setdata(data)
+	
+end sub
+
+sub api_operateRegister(regType as string(2), regNumber as word, regValue as string(5))
+
+	api_sendSock(chr(34) + regType + str(regNumber) + chr(34) + ":")
+	
+	select case (regType)
+	case "HR", "hr":
+		if regValue = "?" then
+			' Read Holdings register
+			api_sendSock(str(modbus_get_holding_register(regNumber)))
+		else
+			' Write to Holdings register
+			if modbus_set_holding_register(regNumber, val(regValue)) = false then
+				api_sendSock(chr(34) + "ERROR" + chr(34))
+			else
+				api_sendSock(chr(34) + "OK" + chr(34))
+			end if
+		end if
+		
+	case "IR", "ir":
+		if regValue = "?" then
+			' Read Inputs register
+			if regNumber >= MODBUS_ADC_INPUT_REGISTER_FLOAT and regNumber < MODBUS_ADC_INPUT_REGISTER_FLOAT + (MAX_ANALOG_LINES * 2) then
+				' Float value
+				regNumber = (regNumber - MODBUS_ADC_INPUT_REGISTER_FLOAT) / 2
+				api_sendSock(ftostr(analog_float_values(regNumber), FTOSTR_MODE_PLAIN, 5))
+			else
+				if regNumber >= MODBUS_COUNTER_INPUT_REGISTER and regNumber < MODBUS_COUNTER_INPUT_REGISTER + (NUM_OF_IO * 2) then
+					regNumber = (regNumber - MODBUS_COUNTER_INPUT_REGISTER) / 2
+					api_sendSock(str(io_cn(regNumber).counter))
+				else
+					api_sendSock(str(modbus_get_input_register(regNumber)))
+				end if
+			end if
+		else
+			' Write to Inputs register
+			api_sendSock(chr(34) + "ERROR" + chr(34))
+		end if
+
+	case "CS", "cs":
+		if regValue = "?" then
+			' Read Coil Status
+			if regNumber > NUM_OF_IO then 
+				api_sendSock(chr(34) + "ERROR" + chr(34))
+			else
+				if param_io(regNumber).io_state = true then
+					api_sendSock("1")
+				else
+					api_sendSock("0")
+				end if
+			end if
+		else
+			' Write Coil Status
+			if regValue = "0" or regValue = "1" then
+				if io_set(regNumber, val(regValue)) = true then
+					api_sendSock(chr(34) + "OK" + chr(34))
+				else
+					api_sendSock(chr(34) + "ERROR" + chr(34))
+				end if
+			else
+				api_sendSock(chr(34) + "ERROR" + chr(34))
+			end if
+		end if
+		
+	case "IS", "is":
+		if regValue = "?" then
+			' Read Input Status
+			if regNumber > NUM_OF_IO then 
+				api_sendSock(chr(34) + "ERROR" + chr(34))
+			else
+				if param_io(regNumber).io_state = true then
+					api_sendSock("1")
+				else
+					api_sendSock("0")
+				end if
+			end if
+		else
+			' Write Input Status
+			api_sendSock(chr(34) + "ERROR" + chr(34))
+		end if
+		
+		
+	end select
+
+end sub
+
+sub api_Operate()
+	
+	dim request as string
+	dim subRequest as string
+	dim indexS as string(5) 
+	dim index as word
+	dim valueS as string(5)
+	dim regType as string(2)
+	
+	dim pos, pos1 as byte
+	
+	request = sock.gethttprqstring(255)
+	
+	pos = instr(1, request, " HTTP", 1)
+	if pos <> 0 then
+		request = left(request, pos - 1)
+	end if
+	
+	api_sendSock("{")
+	
+	' HR - Holding Register
+	' IR - Input Register
+	' CS - Coil Status
+	' IS - Input Status
+	
+	do
+		' Select SubRequest
+		pos = instr(3, request, "&", 1)
+		if pos = 0 then 
+			' Only one request 
+			subRequest = request
+			request = ""
+		else
+			' More Sub Requests
+			subRequest = left(request, pos - 1)
+			request = right(request, len(request) - pos)
+		end if
+		
+		' Operate one sub request
+		pos = instr(3, subRequest, "=", 1)
+		if pos <> 0 then
+			' Set data
+			indexS = mid(subRequest, 3, pos - 3)
+
+			valueS = right(subRequest, len(subRequest) - pos)
+			index = val(indexS)
+			regType = left(subRequest, 2)
+			
+			api_operateRegister(regType, index, valueS)
+		else
+			' Get data
+			indexS = right(subRequest, len(subRequest) - 2)
+			index = val(indexS)
+			regType = left(subRequest, 2)
+			
+			api_operateRegister(regType, index, "?")
+		end if
+
+		if request <> "" then
+			api_sendSock(",")
+		end if
+
+	loop while request <> ""
+	
+	api_sendSock("}")
+	sock.send()
+	
+end sub
+

@@ -5,7 +5,7 @@ src_lib_ver=2_01_03
 name=RemoteIO
 output=RemoteIO.tpc
 debug=off
-defines= /dUSE_DNS=0 /dLCD_TYPE=SOLOMON_SSD1963_FIXED_IO2 /dOBJECT_LCD=LCD_ENABLED /dOBJECT_FD=FD_ENABLED /dSUPPORTS_DISPLAY=0 /dOBJECT_KP=KP_ENABLED /dSUPPORTS_GPRS=0 /dOBJECT_WLN=WLN_ENABLED
+defines= /dLCD_TYPE=SOLOMON_SSD1963_FIXED_IO2 /dUSE_DNS=0 /dOBJECT_LCD=LCD_ENABLED /dOBJECT_FD=FD_ENABLED /dSUPPORTS_DISPLAY=0 /dOBJECT_KP=KP_ENABLED /dSUPPORTS_GPRS=0 /dOBJECT_WLN=WLN_ENABLED
 transport=udp_broadcast
 [address1]
 platform=EM1206W
@@ -778,5 +778,23 @@ path=html\1.bundle.js.gz
 type=binary
 format=
 condition=
+locked=no
+location=project
+[file104]
+path=api.tbh
+type=header
+format=65001
+locked=no
+location=project
+[file105]
+path=api.tbs
+type=basic
+format=65001
+locked=no
+location=project
+[file106]
+path=html\api.html
+type=htmlc
+format=65001
 locked=no
 location=project
