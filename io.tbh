@@ -29,4 +29,5 @@ declare function io_set(channel as word, value as low_high) as boolean
 declare function io_get_pin(channel as byte) as byte
 declare function io_get_slot(channel as byte) as byte
 declare function io_get_numc(channel as byte) as byte
+declare function io_get_ser_num(slot as byte) as byte
 declare sub io_tbt41_set_data(slot as byte, data as byte)

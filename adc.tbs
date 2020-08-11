@@ -204,6 +204,74 @@ const TBT53_READ_ADDR = &h91
 #define SSI_NUM_53 3
 #define SSI_BAUDRATE_53 20
 
+'====================================================
+'	#32
+
+#define TBT32_CMD_CTX					chr(&h02)
+#define TBT32_CMD_END					chr(&h0d)
+
+#define TBT32_ANSWER_OK					"A"
+#define TBT32_ANSWER_ERROR				"ERROR"
+
+#define TBT32_CMD_SET_COMMANDMODE		"C"
+#define TBT32_CMD_SET_DATAMODE			"D"
+#define TBT32_CMD_READ_DATA				"R"
+#define TBT32_CMD_GET_VERSION			"V"
+#define	TBT32_CMD_SET_VOLTAGE			"SV"
+#define	TBT32_CMD_SET_SAMPLERATE		"SR"
+#define TBT32_CMD_SET_SAMPLEMODE		"SM"
+#define TBT32_CMD_SET_ENABLECHANNELS	"SC"
+#define TBT32_CMD_SET_DATAFORMAT		"SD"
+#define TBT32_CMD_SET_A					"SA"
+#define TBT32_CMD_SET_B					"SB"
+#define TBT32_CMD_RESET_TOFACTORY		"SF"
+#define TBT32_CMD_STORE_SETTINGS		"SE"
+#define TBT32_CMD_RESTORE_SETTINGS		"FE"
+#define TBT32_CMD_READ_SETTINGSEEPROM	"RE"
+#define TBT32_CMD_READ_SETTINGSRAM		"RC"
+
+enum TIBBIT32_TYPE
+	NONE,
+	EASY_FW,
+	FULL_FW
+end enum
+
+enum TIBBIT32_VOLTAGE
+    VOLTAGE_M60_P60,
+    VOLTAGE_M30_P30,
+    VOLTAGE_M15_P15,
+    VOLTAGE_0_P60,
+    VOLTAGE_AUTO,
+	VOLTAGE_NOT_SUPPORTED
+end enum
+
+enum TIBBIT32_SAMPLING_MODE
+    SAMPLING_SINGLE,
+    SAMPLING_DIFF
+end enum
+
+enum TIBBIT32_DATA_FORMAT
+	DATA_ASCII,
+	DATA_BIN,
+	DATA_HEX
+end enum
+
+type TIBBIT32_SETTINGS
+	SampleRate as integer
+	Voltage as TIBBIT32_VOLTAGE
+	SampleMode as TIBBIT32_SAMPLING_MODE
+	DataFormat as TIBBIT32_DATA_FORMAT
+	EnableChannels as string
+	A(4) as byte
+	B(4) as char
+end type
+
+type TIBBIT32_VALUES
+		value(4) as string(10)
+end type
+
+dim tibbit32(4) as TIBBIT32_TYPE
+
 '=================================================================
 '		CProbes
 '=================================================================
@@ -335,6 +403,8 @@ declare sub analog_30_init(slot as byte)
 declare function analog_30_read(slot as byte, byref humword as word, byref humidity as float, byref tempword as word, byref temperature as float) as ok_ng
 declare sub analog_35_init(slot as byte)
 declare function analog_35_read(slot as byte, byref pressureFloat as float)as word
+declare sub analog_32_init(slot as byte)
+declare function analog_32_read_data(slot as byte, channels as string(7), byref values as TIBBIT32_VALUES) as boolean
 
 '====================================================
 sub analog_setup()
@@ -446,6 +516,9 @@ sub analog_setup()
 				analog_values(slot * 4) = val(stg_get("AV", slot * 4))	' Set Analog pin initial state
 				analog_40_set(slot, analog_values(slot * 4))
 			end if
+			
+		case SLOT_IA_4_32:
+			analog_32_init(slot)
 
 		end select
 
@@ -669,6 +742,75 @@ sub analog_loop()
 				end if
 			end if
 
+		case SLOT_IA_4_32:
+			dim _channels as string(7)
+			dim _values32 as TIBBIT32_VALUES
+			
+			_channels = ""
+			if param_io(slot * 4 + 0).io_enabled = YES then
+				_channels = "1"
+			end if
+			if param_io(slot * 4 + 1).io_enabled = YES then
+				if _channels <> "" then
+					_channels = _channels + ",2"
+				else
+					_channels = "2"
+				end if
+			end if
+			if param_io(slot * 4 + 2).io_enabled = YES then
+				if _channels <> "" then
+					_channels = _channels + ",3"
+				else
+					_channels = "3"
+				end if
+			end if
+			if param_io(slot * 4 + 4).io_enabled = YES then
+				if _channels <> "" then
+					_channels = _channels + ",4"
+				else
+					_channels = "4"
+				end if
+			end if
+			if analog_32_read_data(slot, _channels, _values32) then
+			
+				if param_io(slot * 4 + 0).io_enabled = YES then
+					analog_values(slot * 4 + 0) = 0
+					analog_float_values(slot * 4 + 0) = strtof(_values32.value(0))
+					analog_agg_send(slot, 0)
+
+					#if DEV_DEBUG_PRINT
+						dev_debugprint("#32 slot: " + str(slot) + ", value (ch 1):" + _values32.value(0))
+					#endif
+				end if
+				if param_io(slot * 4 + 1).io_enabled = YES then
+					analog_values(slot * 4 + 1) = 0
+					analog_float_values(slot * 4 + 1) = strtof(_values32.value(1))
+					analog_agg_send(slot, 1)
+
+					#if DEV_DEBUG_PRINT
+						dev_debugprint("#32 slot: " + str(slot) + ", value (ch 2):" + _values32.value(1))
+					#endif
+				end if
+				if param_io(slot * 4 + 2).io_enabled = YES then
+					analog_values(slot * 4 + 2) = 0
+					analog_float_values(slot * 4 + 2) = strtof(_values32.value(2))
+					analog_agg_send(slot, 2)
+
+					#if DEV_DEBUG_PRINT
+						dev_debugprint("#32 slot: " + str(slot) + ", value (ch 3):" + _values32.value(2))
+					#endif
+				end if
+				if param_io(slot * 4 + 3).io_enabled = YES then
+					analog_values(slot * 4 + 3) = 0
+					analog_float_values(slot * 4 + 3) = strtof(_values32.value(3))
+					analog_agg_send(slot, 3)
+
+					#if DEV_DEBUG_PRINT
+						dev_debugprint("#32 slot: " + str(slot) + ", value (ch 4):" + _values32.value(3))
+					#endif
+				end if
+			end if
+			
 		end select
 
 	next slot
@@ -3041,6 +3183,227 @@ function analog_35_read(slot as byte, byref pressureFloat as float)as word
 	
 end function
 
+'======================================================================
+'	#32 ADC
+sub analog_32_serial_init(port as byte)
+
+	if (port < 4) then
+		ser.num = port
+		ser.rxbuffrq(2)
+		ser.txbuffrq(2)
+		sys.buffalloc()
+		ser.rxclear()
+		ser.txclear()
+		ser.mode = PL_SER_MODE_UART
+		ser.bits = PL_SER_BB_8
+		ser.parity =  PL_SER_PR_NONE
+		ser.flowcontrol = PL_SER_FC_DISABLED
+		ser.interface = PL_SER_SI_HALFDUPLEX
+		ser.enabled = NO
+		ser.baudrate = ser.div9600 / 12		' 115200 bod
+		ser.interchardelay = 3
+		ser.enabled = YES
+
+		' Set MCLR pin
+		select case port
+		case 0:
+			io.num = 0
+		case 1:
+			io.num = 1
+		case 2:
+			io.num = 2
+		case 3:
+			io.num = 3
+		case else:
+			exit sub
+		end select
+		io.enabled = YES
+		io.state = LOW 			' RESET Tibbit#32 with MCLR pin
+		io.state = HIGH			' Unhold MCLR
+		io.enabled = NO
+		
+		' Set RTS pin
+		select case port
+		case 0:
+			io.num = 16
+		case 1:
+			io.num = 17
+		case 2:
+			io.num = 18
+		case 3:
+			io.num = 19
+		case else:
+			exit sub
+		end select
+		io.enabled = YES
+		io.state = LOW
+		
+		' Wait 200ms for RESET cycle end
+		dim tmr as dword
+		tmr = sys.timercountms
+		while sys.timercountms - tmr < 200
+		wend
+	end if
+	
+end sub
+
+sub analog_32_serial_send_data(port as byte, data as string(64))
+	
+	ser.num = port
+	if ser.enabled = YES then
+		ser.setdata(data)
+		ser.send()
+	end if
+
+end sub
+
+function analog_32_serial_get_data(port as byte) as string
+	
+	dim _tmr as dword
+	
+	_tmr = sys.timercountms
+	
+	analog_32_serial_get_data = ""
+	ser.num = port
+	while ser.rxlen = 0
+		if sys.timercountms - _tmr > 1000 then
+			exit function
+		end if
+		'doevents
+	wend
+	analog_32_serial_get_data = ser.getdata(255)
+
+end function
+
+sub analog_32_init(slot as byte)
+
+	dim _answer as string(32)
+	dim _port as byte
+	dim _settings as TIBBIT32_SETTINGS
+
+	_port = io_get_ser_num(slot)
+	
+	if (_port < 4) then
+		analog_32_serial_init(_port)
+		
+		' Check FW version
+		analog_32_serial_send_data(_port, TBT32_CMD_CTX + TBT32_CMD_GET_VERSION + TBT32_CMD_END)
+		_answer = analog_32_serial_get_data(_port)
+		
+		if _answer = TBT32_CMD_CTX + "Tibbo Inc. Tibbit#32 FW1.1b" + TBT32_CMD_END then
+			' EASY FW
+			tibbit32(_port) = EASY_FW
+			#if DEV_DEBUG_PRINT
+				dev_debugprint("#32 slot: " + str(slot) + ", Found EASY FW")
+			#endif
+		end if
+		
+		if _answer = TBT32_CMD_CTX + "Tibbo Inc. Tibbit#32 FW2.1b" + TBT32_CMD_END then
+			' FULL FW
+			tibbit32(_port) = FULL_FW
+			#if DEV_DEBUG_PRINT
+				dev_debugprint("#32 slot: " + str(slot) + ", Found FULL FW")
+			#endif
+		end if
+		
+		if _answer = "" then
+			param_st(slot) = SLOT_EMPTY		' #32 switch OFF in this slot
+			tibbit32(_port) = NONE
+			#if DEV_DEBUG_PRINT
+				dev_debugprint("#32 slot: " + str(slot) + ", Error found #32 FW")
+			#endif
+			exit sub
+		end if
+		
+		' Set tibbit settings
+		' Set Mode
+		analog_32_serial_send_data(_port, TBT32_CMD_CTX + TBT32_CMD_SET_SAMPLEMODE + str(0) + TBT32_CMD_END)
+		_answer = analog_32_serial_get_data(_port)
+			
+		if _answer <> TBT32_CMD_CTX + TBT32_ANSWER_OK + TBT32_CMD_END then
+			param_st(slot) = SLOT_EMPTY		' #32 switch OFF in this slot
+			#if DEV_DEBUG_PRINT
+				dev_debugprint("#32 slot: " + str(slot) + ", Error set samplemode")
+			#endif
+			exit sub
+		end if
+
+		' Set Data format
+		analog_32_serial_send_data(_port, TBT32_CMD_CTX + TBT32_CMD_SET_DATAFORMAT + str(0) + TBT32_CMD_END)
+		_answer = analog_32_serial_get_data(_port)
+			
+		if _answer <> TBT32_CMD_CTX + TBT32_ANSWER_OK + TBT32_CMD_END then
+			param_st(slot) = SLOT_EMPTY		' #32 switch OFF in this slot
+			#if DEV_DEBUG_PRINT
+				dev_debugprint("#32 slot: " + str(slot) + ", Error set dataformat")
+			#endif
+			exit sub
+		end if
+	end if
+	
+end sub
+
+function analog_32_parce_data(data as string, byref values as TIBBIT32_VALUES) as boolean
+	
+	dim _pos, _delim, _len, _i as byte
+	
+	analog_32_parce_data = false
+	
+	values.value(0) = ""
+	values.value(1) = ""
+	values.value(2) = ""
+	values.value(3) = ""
+	_len = len(data)
+	
+	if _len = 0 then exit function
+	
+	_pos = 1
+	for _i = 0 to 3
+		_delim = instr(_pos, data, ",", 1)
+		if _delim <> 0 then
+			values.value(_i) = mid(data, _pos, _delim - _pos)
+			_pos = _delim + 1
+			if _pos > _len then exit function
+		else
+			values.value(_i) = mid(data, _pos, _len - _pos + 1)
+			analog_32_parce_data = true
+			exit function
+		end if
+	next _i
+	
+end function
+
+function analog_32_read_data(slot as byte, channels as string(7), byref values as TIBBIT32_VALUES) as boolean
+	
+	dim _answer as string(64)
+	dim _port as byte
+	
+	_port = io_get_ser_num(slot)
+	
+	if (_port < 4) then
+		analog_32_read_data = false
+		
+		if tibbit32(_port) <> NONE then
+		
+			analog_32_serial_send_data(_port, TBT32_CMD_CTX + TBT32_CMD_READ_DATA + channels + TBT32_CMD_END)
+			_answer = analog_32_serial_get_data(_port)
+
+			if _answer <> TBT32_CMD_CTX + TBT32_ANSWER_ERROR + TBT32_CMD_END then
+				' Check answer format
+				if mid(_answer, 1, 1) <> TBT32_CMD_CTX then exit function
+				if right(_answer, 2) <> ";" + TBT32_CMD_END then exit function
+				_answer = mid(_answer, 2, len(_answer) - 3)
+				if analog_32_parce_data(_answer, values) then
+					analog_32_read_data = true
+				end if
+			end if
+		end if
+	end if
+
+end function
+
+'======================================================================
+'	General
 sub analog_delay_msecond(value as word)
 
 	sys.timercountms = 0

@@ -259,27 +259,16 @@ public sub boot()
 '	HARDWARE INIT
 '===================================================
 	for f = 0 to NUM_OF_SLOTS - 1
+	
 		param_st(f) = get_TibbitType(stg_get("ST", f*2))
+
 		if param_st(f) = SLOT_IOD_2 then
 			' test #41
 			if get_TibbitType(stg_get("ST", f*2 + 1)) = SLOT_8BIT then
 				param_st(f) = SLOT_8BIT
 			end if
 		end if
-'		if f = 1 or f = 3 then
-'			if param_st(f-1) = SLOT_SERIAL_02 or
-'			   param_st(f-1) = SLOT_IA_52 or
-'			   param_st(f-1) = SLOT_IA_53 then
-'			   param_st(f) = SLOT_EMPTY
-'			else
-'				if f = 5 then
-'					if param_st(f-1) = SLOT_IA_52 or
-'					   param_st(f-1) = SLOT_IA_53 then
-'						param_st(f) = SLOT_EMPTY
-'					end if
-'				end if
-'			end if
-'		end if
+		
 	next f
 
 	modbus_initialize()
@@ -829,6 +818,9 @@ function get_TibbitType(tibbit as string(4)) as en_slot_type
 
 	case "22"
 		get_TibbitType = SLOT_IA_RTD
+
+	case "32"
+		get_TibbitType = SLOT_IA_4_32
 
 	case "40_1"
 		get_TibbitType = SLOT_DP

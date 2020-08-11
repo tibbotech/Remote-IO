@@ -193,7 +193,8 @@ enum en_slot_type
 	SLOT_OA_3,
 	SLOT_DP,
 	SLOT_OW,
-	SLOT_8BIT
+	SLOT_8BIT,
+	SLOT_IA_4_32
 end enum
 
 #if SUPPORTS_DISPLAY

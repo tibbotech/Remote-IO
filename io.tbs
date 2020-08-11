@@ -897,6 +897,48 @@ function io_get_numc(channel as byte) as byte
 
 end function
 
+function io_get_ser_num(slot as byte) as byte
+
+	#if PLATFORM_ID = TPP2WG2
+	
+		select case slot
+
+		case 0:
+			io_get_ser_num = 0
+		case 1:
+			io_get_ser_num = 1
+		case 2:
+			io_get_ser_num = 2
+		case 3:
+			io_get_ser_num = 3
+
+		case else:
+			io_get_ser_num = 255
+		
+		end select
+
+	#elif PLATFORM_ID = TPP3WG2
+
+		select case slot
+
+		case 0:
+			io_get_ser_num = 0
+		case 2:
+			io_get_ser_num = 1
+		case 4:
+			io_get_ser_num = 2
+		case 6:
+			io_get_ser_num = 3
+
+		case else:
+			io_get_ser_num = 255
+		
+		end select
+
+	#endif
+
+end function
+
 function io_get_num(slot as byte, pin as byte) as byte
 
 	if pin >= 0 and pin < 4 then
