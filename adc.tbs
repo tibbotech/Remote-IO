@@ -2042,9 +2042,6 @@ dim i,hi_byte,lo_byte,config as byte
 		'	dev_debugprint("read: "+hex(tmp))
 		'#endif
 
-		' Store INTEGER value
-		int_data = tmp
-		
 		if tmp <= &h7FFF then
 			cycle = NO
 		else
@@ -2059,6 +2056,10 @@ dim i,hi_byte,lo_byte,config as byte
 		if cycle = YES then
 			analog_52_read_channel = -analog_52_read_channel
 		end if
+
+		' Store INTEGER value
+		int_data = analog_52_read_channel * 100
+		
 	else
 		#if DEV_DEBUG_PRINT
 			dev_debugprint("ERROR: Tibbit #52 switched to OFF on the slot: " + str(slot))
@@ -2206,9 +2207,6 @@ function analog_22_read(slot as byte, byref data as real, byref int_data as inte
 
 	rtd_rref = 4000.0
 
-	' Store INTEGER value
-	int_data = r
-
 	a2 = 2.0 * rtd_b
 	b_sq = rtd_a * rtd_a
 
@@ -2224,6 +2222,9 @@ function analog_22_read(slot as byte, byref data as real, byref int_data as inte
 
 	data = sqrt(d)
 	data = (-rtd_a + data) / a2
+
+	' Store INTEGER value
+	int_data = data * 100
 
 	'#if DEV_DEBUG_PRINT
 	'	dev_debugprint(ftostr(data,FTOSTR_MODE_AUTO,7)+" oC")
@@ -2502,9 +2503,6 @@ function analog_53_read(slot as byte, byref int_data as integer) as real
 
 	tmp = hi_byte * 256 + lo_byte
 
-	' Store INTEGER value
-	int_data = tmp
-
 	if tmp <= &h7FFF then
 		rtn = tmp * LSB_V
 	else
@@ -2522,6 +2520,8 @@ function analog_53_read(slot as byte, byref int_data as integer) as real
 		analog_53_read = rtn * mA_On_V + 0.004
 	end if
 
+	' Store INTEGER value
+	int_data = analog_53_read * 100
 
 end function
 

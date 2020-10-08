@@ -3,7 +3,7 @@
 >>GI	E	D	1	4	4	I	192.168.1.1	Ethernet Gateway IP
 >>NM	E	D	1	4	4	I	255.255.255.0	Ethernet Netmask
 >>WE	E	B	1	0	2	I	0	Wi-Fi mode
->>WD	E	B	1	0	1	I	0	Wi-Fi DHCP
+>>WD	E	B	1	0	1	I	1	Wi-Fi DHCP
 >>WI	E	D	1	4	4	I	192.168.1.41	Wi-Fi IP
 >>WG	E	D	1	4	4	I	192.168.1.1	Wi-Fi Gateway IP
 >>WN	E	D	1	4	4	I	255.255.255.0	Wi-Fi Netmask
@@ -31,7 +31,7 @@
 >>BR	E	B	4	0	13	A	5	Serial baudrate
 >>PR	E	B	4	0	4	A	0	Serial parity
 >>BB	E	B	4	0	1	A	1	Serial bits
->>TE	E	B	1	0	1	A	0	SNTP enbled
+>>TE	E	B	1	0	1	A	1	SNTP enbled
 >>TS	E	D	1	4	4	A	220.130.158.71	SNTP server ip
 >>TZ	E	B	1	0	34	A	0	timezone
 >>DS	E	B	1	0	1	A	0	daylight saving
