@@ -173,7 +173,20 @@ public function set_ser_channel_02(channel_num as byte) as boolean
 			io.lineset(SER0_HDFD, HIGH)
 			io.lineset(SER0_RSMD, LOW)
 			set_ser_channel_02 = true
-		
+
+#if PLATFORM_ID = TPP3WG2
+		case 1:
+			io.num = SER1_HDFD
+			io.state = HIGH
+			io.enabled = YES
+			io.num = SER1_RSMD
+			io.state = LOW
+			io.enabled = YES
+			io.lineset(SER1_HDFD, HIGH)
+			io.lineset(SER1_RSMD, LOW)
+			set_ser_channel_02 = true
+#endif
+
 		case 2:
 			io.num = SER2_HDFD
 			io.state = HIGH
@@ -184,7 +197,20 @@ public function set_ser_channel_02(channel_num as byte) as boolean
 			io.lineset(SER2_HDFD, HIGH)
 			io.lineset(SER2_RSMD, LOW)
 			set_ser_channel_02 = true
-			
+		
+#if PLATFORM_ID = TPP3WG2
+		case 3:
+			io.num = SER3_HDFD
+			io.state = HIGH
+			io.enabled = YES
+			io.num = SER3_RSMD
+			io.state = LOW
+			io.enabled = YES
+			io.lineset(SER3_HDFD, HIGH)
+			io.lineset(SER3_RSMD, LOW)
+			set_ser_channel_02 = true
+#endif
+
 		case else:
 			set_ser_channel_02 = false
 			
@@ -203,6 +229,19 @@ public function set_ser_channel_02(channel_num as byte) as boolean
 			io.lineset(SER0_RSMD, HIGH)
 			set_ser_channel_02 = true
 			
+#if PLATFORM_ID = TPP3WG2
+		case 1:
+			io.num = SER1_HDFD
+			io.state = HIGH
+			io.enabled = YES
+			io.num = SER1_RSMD
+			io.state = LOW
+			io.enabled = YES
+			io.lineset(SER1_HDFD, HIGH)
+			io.lineset(SER1_RSMD, HIGH)
+			set_ser_channel_02 = true
+#endif
+			
 		case 2:
 			io.num = SER2_HDFD
 			io.state = HIGH
@@ -213,6 +252,19 @@ public function set_ser_channel_02(channel_num as byte) as boolean
 			io.lineset(SER2_HDFD, HIGH)
 			io.lineset(SER2_RSMD, HIGH)
 			set_ser_channel_02 = true
+			
+#if PLATFORM_ID = TPP3WG2
+		case 3:
+			io.num = SER3_HDFD
+			io.state = HIGH
+			io.enabled = YES
+			io.num = SER3_RSMD
+			io.state = LOW
+			io.enabled = YES
+			io.lineset(SER3_HDFD, HIGH)
+			io.lineset(SER3_RSMD, HIGH)
+			set_ser_channel_02 = true
+#endif
 			
 		case else:
 			set_ser_channel_02 = false
@@ -233,6 +285,20 @@ public function set_ser_channel_02(channel_num as byte) as boolean
 			io.lineset(SER0_RSMD, HIGH)
 			set_ser_channel_02 = true
 			
+#if PLATFORM_ID = TPP3WG2
+		case 1:
+			ser.interface = PL_SER_SI_HALFDUPLEX
+			io.num = SER1_HDFD
+			io.state = HIGH
+			io.enabled = YES
+			io.num = SER1_RSMD
+			io.state = LOW
+			io.enabled = YES
+			io.lineset(SER1_HDFD, LOW)
+			io.lineset(SER1_RSMD, HIGH)
+			set_ser_channel_02 = true
+#endif
+
 		case 2:
 			ser.interface = PL_SER_SI_HALFDUPLEX
 			io.num = SER2_HDFD
@@ -245,6 +311,20 @@ public function set_ser_channel_02(channel_num as byte) as boolean
 			io.lineset(SER2_RSMD, HIGH)
 			set_ser_channel_02 = true
 			
+#if PLATFORM_ID = TPP3WG2
+		case 3:
+			ser.interface = PL_SER_SI_HALFDUPLEX
+			io.num = SER3_HDFD
+			io.state = HIGH
+			io.enabled = YES
+			io.num = SER3_RSMD
+			io.state = LOW
+			io.enabled = YES
+			io.lineset(SER3_HDFD, LOW)
+			io.lineset(SER3_RSMD, HIGH)
+			set_ser_channel_02 = true
+#endif
+
 		case else:
 			set_ser_channel_02 = false
 			

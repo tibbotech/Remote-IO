@@ -1,7 +1,7 @@
 [project]
 version=1
-platform=TPP3W(G2)
-src_lib_ver=2_01_03
+platform=TPP2W(G2)
+src_lib_ver=2_01_02
 name=RemoteIO
 output=RemoteIO.tpc
 debug=off
@@ -38,7 +38,7 @@ address=0.36.119.81.194.117
 [address8]
 platform=TPP3W(G2)
 transport=udp_broadcast
-address=0.36.119.86.88.187
+address=0.36.119.82.154.181
 [address9]
 platform=EM2000
 transport=udp_broadcast
@@ -46,7 +46,7 @@ address=0.1.2.3.4.231
 [address10]
 platform=TPP2W(G2)
 transport=udp_broadcast
-address=0.36.119.86.164.110
+address=0.36.119.82.154.181
 [file1]
 path=main.tbs
 type=basic

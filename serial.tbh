@@ -1,7 +1,18 @@
-const SER0_HDFD=PL_IO_NUM_11_TX1	'HIGH for full-duplex, LOW for half-duplex
-const SER0_RSMD=PL_IO_NUM_10_RX1	'HIGH for RS422/485, LOW for RS232
-const SER2_HDFD=PL_IO_NUM_15_TX3
-const SER2_RSMD=PL_IO_NUM_14_RX3
+#if PLATFORM_ID = TPP3WG2
+	const SER0_HDFD = 32		'HIGH for full-duplex, LOW for half-duplex
+	const SER0_RSMD = 33		'HIGH for RS422/485, LOW for RS232
+	const SER1_HDFD = 34
+	const SER1_RSMD = 35
+	const SER2_HDFD = 36
+	const SER2_RSMD = 37
+	const SER3_HDFD = 38
+	const SER3_RSMD = 39
+#elif PLATFORM_ID = TPP2WG2
+	const SER0_HDFD = PL_IO_NUM_11_TX1		'HIGH for full-duplex, LOW for half-duplex
+	const SER0_RSMD = PL_IO_NUM_10_RX1		'HIGH for RS422/485, LOW for RS232
+	const SER2_HDFD = PL_IO_NUM_15_TX3
+	const SER2_RSMD = PL_IO_NUM_14_RX3
+#endif
 
 const BASE_OF_INT_LINES=PL_IO_NUM_16_INT0
 

@@ -855,6 +855,18 @@ function get_TibbitType(tibbit as string(4)) as en_slot_type
 	case "41"
 		get_TibbitType = SLOT_8BIT
 		
+	case "43-1"
+		get_TibbitType = SLOT_43_1
+		
+	case "43-2"
+		get_TibbitType = SLOT_43_2
+		
+	case "44-1"
+		get_TibbitType = SLOT_44_1
+		
+	case "44-2"
+		get_TibbitType = SLOT_44_2
+		
 	case else:
 		get_TibbitType = SLOT_EMPTY
 		

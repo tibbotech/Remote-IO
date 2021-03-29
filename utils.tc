@@ -560,16 +560,22 @@ void send_bp_sensors_list()
 	sock_send("],");
 	
 	// send FIND flags
+	sys.debugprint("Find: ");
 	sock_send("\"FIND\":");
 	
 	sock_send("[");
 	for(i = 0; i < 4; ++i) {
 		sval = str(bp_get_find(i));
+		sys.debugprint(bp_get_find(i));
 		sock_send("\""+sval+"\"");
-		if (i != 3)
+		if (i != 3) {
+			sys.debugprint(",");
 			sock_send(",");
+		}
 	}
 	sock_send("]");
+	
+	sys.debugprint("\n");
 }
 
 void send_ow_sensors_list()
