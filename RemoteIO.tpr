@@ -1,11 +1,11 @@
 [project]
 version=1
-platform=TPP2W(G2)
+platform=TPP3W(G2)
 src_lib_ver=2_01_02
 name=RemoteIO
 output=RemoteIO.tpc
 debug=off
-defines= /dLCD_TYPE=SOLOMON_SSD1963_FIXED_IO2 /dUSE_DNS=0 /dOBJECT_LCD=LCD_ENABLED /dOBJECT_FD=FD_ENABLED /dSUPPORTS_DISPLAY=0 /dOBJECT_KP=KP_ENABLED /dSUPPORTS_GPRS=0 /dOBJECT_WLN=WLN_ENABLED
+defines= /dUSE_DNS=0 /dLCD_TYPE=SOLOMON_SSD1963_FIXED_IO2 /dOBJECT_LCD=LCD_ENABLED /dOBJECT_FD=FD_ENABLED /dSUPPORTS_DISPLAY=0 /dOBJECT_KP=KP_ENABLED /dSUPPORTS_GPRS=0 /dOBJECT_WLN=WLN_ENABLED
 transport=udp_broadcast
 [address1]
 platform=EM1206W
@@ -38,7 +38,7 @@ address=0.36.119.81.194.117
 [address8]
 platform=TPP3W(G2)
 transport=udp_broadcast
-address=0.36.119.82.154.181
+address=0.36.119.86.88.187
 [address9]
 platform=EM2000
 transport=udp_broadcast
@@ -389,7 +389,7 @@ locked=no
 location=project
 quality=0
 options=0
-hguidelines=2147483647
+hguidelines=
 vguidelines=
 [file49]
 path=icons\io_icon.bmp
@@ -798,6 +798,13 @@ location=project
 path=html\api.html
 type=htmlc
 format=65001
+condition=
+locked=no
+location=project
+[file107]
+path=fixedconf.json
+type=binary
+format=
 condition=
 locked=no
 location=project

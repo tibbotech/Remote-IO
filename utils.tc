@@ -683,11 +683,16 @@ _settings_send_js(void)
 void
 send_settings()
 {
+	#ifdef FIXEDCONFIG
+		sock_send("{\"fixed\":true,");
+	#else
+		sock_send("{\"fixed\":false,");
+	#endif
 	#if PLATFORM_ID == TPP3WG2
-	sock_send("{\"options\":{\n\"xtxt\":\"" + STG_FILE_C + "\"\n,\"board\":\"TPP3\"\n},\n\"settings\":{\n");
+	sock_send("\"options\":{\n\"xtxt\":\"" + STG_FILE_C + "\"\n,\"board\":\"TPP3\"\n},\n\"settings\":{\n");
 	#endif
 	#if PLATFORM_ID == TPP2WG2
-	sock_send("{\"options\":{\n\"xtxt\":\"" + STG_FILE_C + "\"\n,\"board\":\"TPP2\"\n},\n\"settings\":{\n");
+	sock_send("{"options\":{\n\"xtxt\":\"" + STG_FILE_C + "\"\n,\"board\":\"TPP2\"\n},\n\"settings\":{\n");
 	#endif
 	_settings_send_js();
 	sock_send("}\n}\n");

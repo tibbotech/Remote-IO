@@ -13,6 +13,9 @@ include "global.tbh"
 	#endif 
 
 declare function get_TibbitType(tibbit as string(4)) as en_slot_type
+#ifdef FIXEDCONFIG
+declare function cfg_parse() as boolean
+#endif
 
 '====================================================================
 public sub boot()
@@ -57,6 +60,12 @@ public sub boot()
 		end if
 	end if
 
+	' Check configuration for FIXED mode
+	#ifdef FIXEDCONFIG
+		' Parce config file
+		cfg_parse()
+	#endif
+	
 	error_mode = NO
 	if stg_check_all(s) <> EN_STG_STATUS_OK then
 		if device_setting_init(EN_STG_INIT_MODE_NORMAL) <> OK then
@@ -872,3 +881,85 @@ function get_TibbitType(tibbit as string(4)) as en_slot_type
 		
 	end select
 end function
+
+#ifdef FIXEDCONFIG
+function cfg_parse() as boolean
+	dim slot_type(NUM_OF_SLOTS_STG) as string(4)
+	dim resp as pl_fd_status_codes
+	dim buff as string
+	dim pos, pos1 as byte
+	dim posfile as dword
+	dim substr as string(6)
+	dim i as byte
+	dim endst as boolean
+	
+	cfg_parse = false
+	substr = chr(34) + "ST" + chr(34) + ":["
+	posfile = 0
+	
+	romfile.open(FILEFIXEDCONFIG)
+	if romfile.size > 0 then
+		'Find "ST":[
+		buff = romfile.getdata(250)
+		while len(buff) <> 0
+			pos = instr(1, buff, substr, 1)
+			if pos <> 0 then
+				romfile.pointer32 = posfile + pos + 1
+				buff = romfile.getdata(255)
+				exit while
+			else
+				buff = right(buff, 5)
+				buff = buff + romfile.getdata(250)
+				posfile = posfile + 250
+			end if
+		wend
+		
+		'Parce ST fields
+		pos = 1
+		endst = false
+		for i = 0 to NUM_OF_SLOTS_STG - 1
+			if endst = false then
+				if mid(buff, pos, 1) = chr(34) then
+					pos1 = instr(pos + 1, buff, chr(34), 1)
+					if pos1 <> 0 then
+						slot_type(i) = mid(buff, pos + 1, pos1 - pos - 1)
+						if mid(buff, pos1 + 1, 1) <> "," then
+							endst = true
+						end if
+						pos = pos1 + 2
+					else
+						slot_type(i) = "00_0"
+						endst = true
+					end if
+				else
+					slot_type(i) = "00_0"
+					endst = true
+				end if
+			else
+				slot_type(i) = "00_0"
+			end if
+		next i
+		
+		' Check match for current conf
+		endst = false
+		for i = 0 to NUM_OF_SLOTS_STG - 1
+			if stg_get("ST", i) <> slot_type(i) then
+				endst = true
+				exit for
+			end if
+		next i
+		
+		if endst then
+			device_setting_init(EN_STG_INIT_MODE_OVERRIDE)
+			' Store fixed conf
+			for i = 0 to NUM_OF_SLOTS_STG - 1
+				stg_set("ST", i, slot_type(i))
+			next i
+		end if
+		
+		cfg_parse = true
+		
+	end if
+	
+end function
+#endif

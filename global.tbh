@@ -1,6 +1,9 @@
 const FIRMWARE_VERSION="{RemoteIO.1.00.00}"
 
 '------------------------------------------------------------------------------
+#define FIXEDCONFIG
+#define FILEFIXEDCONFIG "fixedconf.json"
+
 #define MAX_NUM_WLN_FAILURES 5
 #define SIMULATE_ETHER_OFF_BY_BUTTON 0
 #define AGG_MULTI_NODE 0
@@ -33,6 +36,7 @@ const LOGIN_TIMEOUT = 1500
 	#define MAX_ANALOG_LINES 48
 	#define NUM_OF_SLOTS 13
 	#define NUM_OF_SLOTS_ALL 26
+	#define NUM_OF_SLOTS_STG 29
 	#define NUM_I2C_SLOTS 12
 	#define NUM_STD_SLOTS 11
 	#define NUM_SERIAL_PORTS 4
@@ -61,6 +65,7 @@ const LOGIN_TIMEOUT = 1500
 	#define MAX_ANALOG_LINES 24
 	#define NUM_OF_SLOTS 6
 	#define NUM_OF_SLOTS_ALL 12
+	#define NUM_OF_SLOTS_STG 13
 	#define NUM_I2C_SLOTS 6
 	#define NUM_STD_SLOTS 6
 	#define NUM_SERIAL_PORTS 4
