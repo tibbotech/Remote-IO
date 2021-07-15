@@ -119,9 +119,6 @@ public sub boot()
 	end if
 
 	#if WLN_AVAILABLE
-		'Set up Bluetooth Only for WA2000 module
-		luis_start()
-
 		'Wi-Fi parameters and DHCP
 		wln_error = NO
 		param_we = stg_get("WE", 0)
@@ -213,6 +210,9 @@ public sub boot()
 				#endif
 			end if
 		end if
+		
+		'Set up Bluetooth. Only for WA2000 module
+		luis_start()
 
 		#if SIGNAL_STRENGTH_INDICATION
 			signal_strength_indication_init()
